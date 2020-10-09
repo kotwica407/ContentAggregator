@@ -13,6 +13,7 @@ namespace ContentAggregator.Context
 
         }
 
-        public DbSet<UserEntity> UserEntities { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<HashEntity> HashEntities { get; set; } 
     }
 }

@@ -18,7 +18,21 @@ namespace ContentAggregator.Context.Migrations
                 .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("ContentAggregator.Context.Entities.UserEntity", b =>
+            modelBuilder.Entity("ContentAggregator.Context.Entities.HashEntity", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("HashEntities");
+                });
+
+            modelBuilder.Entity("ContentAggregator.Context.Entities.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -41,7 +55,7 @@ namespace ContentAggregator.Context.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserEntities");
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

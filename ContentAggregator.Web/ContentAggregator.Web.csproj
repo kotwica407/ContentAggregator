@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ContentAggregator.Context\ContentAggregator.Context.csproj" />
+    <ProjectReference Include="..\ContentAggregator.Services\ContentAggregator.Services.csproj" />
   </ItemGroup>
 
 

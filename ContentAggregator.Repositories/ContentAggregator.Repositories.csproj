@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ContentAggregator.Context\ContentAggregator.Context.csproj" />
+    <ProjectReference Include="..\ContentAggregator.Models\ContentAggregator.Models.csproj" />
+  </ItemGroup>
+
+</Project>
