@@ -5,7 +5,6 @@ using ContentAggregator.Models.Dtos;
 using ContentAggregator.Repositories.Hashes;
 using ContentAggregator.Repositories.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,10 +77,11 @@ namespace ContentAggregator.Services.Auth
             var roles = user.CredentialLevel.GetAllPossibleRoles();
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, dto.Name),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.NameIdentifier, user.Name)
             };
             claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
-
+            
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             return new ClaimsPrincipal(identity);
         }

@@ -2,8 +2,8 @@
 using ContentAggregator.Services.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace ContentAggregator.Web.Controllers
@@ -24,7 +24,13 @@ namespace ContentAggregator.Web.Controllers
             if (HttpContext.User.Identity.IsAuthenticated)
                 return BadRequest("User is still authenticated");
             var principal = await _authService.LoginUserAsync(dto);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            var authProperties = new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                ExpiresUtc = DateTimeOffset.Now.AddDays(1),
+                IsPersistent = dto.RememberMe
+            };
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
             return Ok("Logged in");
         }
 
@@ -40,7 +46,7 @@ namespace ContentAggregator.Web.Controllers
         {
             if (!HttpContext.User.Identity.IsAuthenticated)
                 return Unauthorized("");
-            await HttpContext.SignOutAsync();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok("");
         }
     }
