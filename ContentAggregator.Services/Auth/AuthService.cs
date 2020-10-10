@@ -1,14 +1,17 @@
 ﻿using ContentAggregator.Common;
-using ContentAggregator.Context;
+using ContentAggregator.Common.Extensions;
 using ContentAggregator.Context.Entities;
 using ContentAggregator.Models.Dtos;
 using ContentAggregator.Repositories.Hashes;
 using ContentAggregator.Repositories.Users;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Mail;
+using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ContentAggregator.Services.Auth
@@ -48,6 +51,41 @@ namespace ContentAggregator.Services.Auth
 
             return true;
         }
+
+        public async Task<ClaimsPrincipal> LoginUserAsync(LoginDto dto)
+        {
+            if (dto.Name == null || dto.Password == null)
+                throw new Exception("Username or password is null");
+
+            var user = await _userRepository.GetByUserName(dto.Name);
+            if (user == null)
+            {
+                throw new Exception("Wrong username or password");
+            }
+            string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
+            if (savedPasswordHash == null)
+            {
+                throw new Exception("User has no password");
+            }
+            byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
+            byte[] salt = new byte[16];
+            Array.Copy(hashBytes, 0, salt, 0, 16);
+            var pbkdf2 = new Rfc2898DeriveBytes(dto.Password, salt, 100000);
+            byte[] hash = pbkdf2.GetBytes(20);
+            for (int i = 0; i < 20; i++)
+                if (hashBytes[i + 16] != hash[i])
+                    throw new Exception("Wrong username or password");
+            var roles = user.CredentialLevel.GetAllPossibleRoles();
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, dto.Name),
+            };
+            claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            return new ClaimsPrincipal(identity);
+        }
+
         public async Task RegisterUserAsync(UserRegisterDto dto)
         {
             #region Validate
@@ -98,8 +136,6 @@ namespace ContentAggregator.Services.Auth
             Array.Copy(hash, 0, hashBytes, 16, 20);
             return Convert.ToBase64String(hashBytes);
         }
-
-        
 
         private bool IsValidEmail(string emailAddress)
         {
