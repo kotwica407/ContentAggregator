@@ -16,6 +16,7 @@ using ContentAggregator.Repositories.Users;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Auth
 {
@@ -24,22 +25,29 @@ namespace ContentAggregator.Services.Auth
         private readonly IHashRepository _hashRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
+        private readonly ILogger _logger;
 
         public AuthService(
             IHashRepository hashRepository,
             IUserRepository userRepository,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ILogger<AuthService> logger)
         {
             _hashRepository = hashRepository;
             _userRepository = userRepository;
             _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
         public async Task Logout()
         {
             HttpContext context = _httpContextAccessor.HttpContext;
             if (!context.User.Identity.IsAuthenticated)
+            {
+                _logger.LogWarning("You cannot logout if you are not logged in");
                 throw HttpError.Unauthorized("");
+            }
+                
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
