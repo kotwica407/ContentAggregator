@@ -1,15 +1,12 @@
-﻿using ContentAggregator.Context.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using ContentAggregator.Models.Model;
 
 namespace ContentAggregator.Repositories.Hashes
 {
     public interface IHashRepository
     {
-        Task CreateOrUpdate(HashEntity hashEntity);
-        Task<HashEntity> Get(string userId);
+        Task CreateOrUpdate(Hash hash);
+        Task<Hash> Get(string userId);
         Task Delete(string userId);
     }
 }

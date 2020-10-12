@@ -1,17 +1,19 @@
-﻿using ContentAggregator.Common;
-using ContentAggregator.Common.Extensions;
-using ContentAggregator.Context.Entities;
-using ContentAggregator.Models.Dtos;
-using ContentAggregator.Repositories.Hashes;
-using ContentAggregator.Repositories.Users;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using ContentAggregator.Common;
+using ContentAggregator.Common.Extensions;
+using ContentAggregator.Models;
+using ContentAggregator.Models.Dtos;
+using ContentAggregator.Models.Exceptions;
+using ContentAggregator.Models.Model;
+using ContentAggregator.Repositories.Hashes;
+using ContentAggregator.Repositories.Users;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace ContentAggregator.Services.Auth
 {
@@ -19,32 +21,30 @@ namespace ContentAggregator.Services.Auth
     {
         private readonly IHashRepository _hashRepository;
         private readonly IUserRepository _userRepository;
+
         public AuthService(IHashRepository hashRepository, IUserRepository userRepository)
         {
             _hashRepository = hashRepository;
             _userRepository = userRepository;
         }
+
         public async Task<bool> CheckPasswordAsync(LoginDto dto)
         {
             if (dto.Name == null || dto.Password == null)
                 return false;
 
-            var user = await _userRepository.GetByUserName(dto.Name);
-            if(user == null)
-            {
+            User user = await _userRepository.GetByUserName(dto.Name);
+            if (user == null)
                 return false;
-            }
             string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
-            if(savedPasswordHash == null)
-            {
-                throw new KeyNotFoundException();
-            }
+            if (savedPasswordHash == null)
+                throw HttpError.NotFound("Password not found")
             byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
             byte[] salt = new byte[16];
             Array.Copy(hashBytes, 0, salt, 0, 16);
             var pbkdf2 = new Rfc2898DeriveBytes(dto.Password, salt, 100000);
             byte[] hash = pbkdf2.GetBytes(20);
-            for (int i = 0; i < 20; i++)
+            for (var i = 0; i < 20; i++)
                 if (hashBytes[i + 16] != hash[i])
                     return false;
 
@@ -54,34 +54,30 @@ namespace ContentAggregator.Services.Auth
         public async Task<ClaimsPrincipal> LoginUserAsync(LoginDto dto)
         {
             if (dto.Name == null || dto.Password == null)
-                throw new Exception("Username or password is null");
+                throw HttpError.InternalServerError("Username or password is null");
 
-            var user = await _userRepository.GetByUserName(dto.Name);
+            User user = await _userRepository.GetByUserName(dto.Name);
             if (user == null)
-            {
-                throw new Exception("Wrong username or password");
-            }
+                throw HttpError.Unauthorized("Wrong username or password");
             string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
             if (savedPasswordHash == null)
-            {
-                throw new Exception("User has no password");
-            }
+                throw HttpError.InternalServerError("User has no password");
             byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
             byte[] salt = new byte[16];
             Array.Copy(hashBytes, 0, salt, 0, 16);
             var pbkdf2 = new Rfc2898DeriveBytes(dto.Password, salt, 100000);
             byte[] hash = pbkdf2.GetBytes(20);
-            for (int i = 0; i < 20; i++)
+            for (var i = 0; i < 20; i++)
                 if (hashBytes[i + 16] != hash[i])
-                    throw new Exception("Wrong username or password");
-            var roles = user.CredentialLevel.GetAllPossibleRoles();
-            var claims = new List<Claim>
+                    throw HttpError.Unauthorized("Wrong username or password");
+            string[] roles = user.CredentialLevel.GetAllPossibleRoles();
+            List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.NameIdentifier, user.Name)
             };
             claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
-            
+
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             return new ClaimsPrincipal(identity);
         }
@@ -89,36 +85,41 @@ namespace ContentAggregator.Services.Auth
         public async Task RegisterUserAsync(UserRegisterDto dto)
         {
             #region Validate
+
             if (!IsValidEmail(dto.Email))
-                throw new Exception("Invalid email address");
+                throw HttpError.BadRequest("Invalid email address");
 
             if (dto.Name == null)
-                throw new Exception("Username cannot be null");
+                throw HttpError.BadRequest("Username cannot be null");
 
             if (dto.Name.Length > Consts.UsernameMaxLength)
-                throw new Exception("Username is too long");
+                throw HttpError.BadRequest("Username is too long");
 
             if (dto.Description != null && dto.Description.Length > Consts.DescriptionMaxLength)
-                throw new Exception("Description is too long");
-            #endregion
-            #region CheckIfUserExists
-            if ((await _userRepository.GetByUserName(dto.Name)) != null)
-                throw new Exception($"There is user with {dto.Name} username");
+                throw HttpError.BadRequest("Description is too long");
 
-            if ((await _userRepository.GetByEmail(dto.Email)) != null)
-                throw new Exception($"There is user with {dto.Email} email address");
+            #endregion
+
+            #region CheckIfUserExists
+
+            if (await _userRepository.GetByUserName(dto.Name) != null)
+                throw HttpError.BadRequest($"There is user with {dto.Name} username");
+
+            if (await _userRepository.GetByEmail(dto.Email) != null)
+                throw HttpError.BadRequest($"There is user with {dto.Email} email address");
+
             #endregion
 
             var user = new User
             {
                 Id = Guid.NewGuid().ToString(),
-                CredentialLevel = Models.CredentialLevel.User,
+                CredentialLevel = CredentialLevel.User,
                 Description = dto.Description,
                 Email = dto.Email,
                 Name = dto.Name
             };
             await _userRepository.Create(user);
-            await _hashRepository.CreateOrUpdate(new HashEntity
+            await _hashRepository.CreateOrUpdate(new Hash
             {
                 UserId = user.Id,
                 PasswordHash = CreateHash(dto.Password)
@@ -141,7 +142,7 @@ namespace ContentAggregator.Services.Auth
         {
             try
             {
-                MailAddress m = new MailAddress(emailAddress);
+                var m = new MailAddress(emailAddress);
                 return true;
             }
             catch (FormatException)

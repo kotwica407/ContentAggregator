@@ -1,9 +1,9 @@
-﻿using ContentAggregator.Context;
-using ContentAggregator.Context.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq.Expressions;
+﻿using System;
 using System.Threading.Tasks;
+using ContentAggregator.Context;
+using ContentAggregator.Models.Model;
+using ContentAggregator.Repositories.Mappings;
+using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Repositories.Users
 {
@@ -15,50 +15,59 @@ namespace ContentAggregator.Repositories.Users
         {
             _userContext = userContext;
         }
+
         public async Task Create(User user)
         {
-            await _userContext.Users.AddAsync(user);
+            Context.Entities.User entity = UserMapper.Map(user);
+            if (entity == null)
+                throw new Exception("User entity cannot be null");
+            await _userContext.Users.AddAsync(entity);
             await _userContext.SaveChangesAsync();
         }
 
         public async Task Delete(string userId)
         {
-            var existingEntity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            Context.Entities.User existingEntity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
             if (existingEntity != null)
             {
                 _userContext.Users.Remove(existingEntity);
                 await _userContext.SaveChangesAsync();
-            }  
-        }
-
-        public async Task<User> Get(Expression<Func<User, bool>> predicate)
-        {
-            return await _userContext.Users.FirstOrDefaultAsync(predicate);
+            }
         }
 
         public async Task<User> GetByEmail(string emailAddress)
         {
-            return await _userContext.Users.FirstOrDefaultAsync(x => x.Email == emailAddress);
+            Context.Entities.User entity =
+                await _userContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == emailAddress);
+            return UserMapper.Map(entity);
         }
 
         public async Task<User> GetByUserName(string userName)
         {
-            return await _userContext.Users.FirstOrDefaultAsync(x => x.Name == userName);
+            Context.Entities.User entity =
+                await _userContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Name == userName);
+            return UserMapper.Map(entity);
         }
 
         public async Task<bool> Update(User user)
         {
-            var existingEntity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
-            if (existingEntity == null)
+            Context.Entities.User entity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+            if (entity == null)
                 return false;
 
-            existingEntity.Name = user.Name;
-            existingEntity.Email = user.Email;
-            existingEntity.Description = user.Description;
-            existingEntity.CredentialLevel = user.CredentialLevel;
+            entity.Name = user.Name;
+            entity.Email = user.Email;
+            entity.Description = user.Description;
+            entity.CredentialLevel = user.CredentialLevel;
 
-            await _userContext.SaveChangesAsync();
-            return true;
+            try
+            {
+                return await _userContext.SaveChangesAsync() > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }

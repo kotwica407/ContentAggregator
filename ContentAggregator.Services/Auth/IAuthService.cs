@@ -1,9 +1,6 @@
-﻿using ContentAggregator.Models.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Security.Claims;
 using System.Threading.Tasks;
+using ContentAggregator.Models.Dtos;
 
 namespace ContentAggregator.Services.Auth
 {

@@ -1,7 +1,8 @@
-﻿using ContentAggregator.Context;
-using ContentAggregator.Context.Entities;
+﻿using System.Threading.Tasks;
+using ContentAggregator.Context;
+using ContentAggregator.Models.Model;
+using ContentAggregator.Repositories.Mappings;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace ContentAggregator.Repositories.Hashes
 {
@@ -13,35 +14,35 @@ namespace ContentAggregator.Repositories.Hashes
         {
             _userContext = userContext;
         }
-        public async Task CreateOrUpdate(HashEntity hashEntity)
-        {
-            var existingEntity = await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == hashEntity.UserId);
 
-            if (existingEntity != null)
-            {
-                existingEntity.PasswordHash = hashEntity.PasswordHash;
-            }
+        public async Task CreateOrUpdate(Hash hash)
+        {
+            Context.Entities.Hash entity =
+                await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == hash.UserId);
+
+            if (entity != null)
+                entity.PasswordHash = hash.PasswordHash;
             else
-            {
-                await _userContext.HashEntities.AddAsync(hashEntity);
-            }
-            
-           await _userContext.SaveChangesAsync();
+                await _userContext.HashEntities.AddAsync(HashMapper.Map(hash));
+
+            await _userContext.SaveChangesAsync();
         }
 
         public async Task Delete(string userId)
         {
-            var entity = await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == userId);
-            if(entity != null)
+            Context.Entities.Hash entity = await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (entity != null)
             {
                 _userContext.HashEntities.Remove(entity);
                 await _userContext.SaveChangesAsync();
             }
         }
 
-        public async Task<HashEntity> Get(string userId)
+        public async Task<Hash> Get(string userId)
         {
-            return await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == userId);
+            Context.Entities.Hash entity =
+                await _userContext.HashEntities.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
+            return HashMapper.Map(entity);
         }
     }
 }
