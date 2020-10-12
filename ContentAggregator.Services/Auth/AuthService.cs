@@ -13,19 +13,34 @@ using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories.Hashes;
 using ContentAggregator.Repositories.Users;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 namespace ContentAggregator.Services.Auth
 {
     public class AuthService : IAuthService
     {
         private readonly IHashRepository _hashRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
 
-        public AuthService(IHashRepository hashRepository, IUserRepository userRepository)
+        public AuthService(
+            IHashRepository hashRepository,
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
             _hashRepository = hashRepository;
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
+        }
+
+        public async Task Logout()
+        {
+            HttpContext context = _httpContextAccessor.HttpContext;
+            if (!context.User.Identity.IsAuthenticated)
+                throw HttpError.Unauthorized("");
+            await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         public async Task<bool> CheckPasswordAsync(LoginDto dto)
@@ -51,8 +66,12 @@ namespace ContentAggregator.Services.Auth
             return true;
         }
 
-        public async Task<ClaimsPrincipal> LoginUserAsync(LoginDto dto)
+        public async Task LoginUserAsync(LoginDto dto)
         {
+            HttpContext context = _httpContextAccessor.HttpContext;
+            if (context.User.Identity.IsAuthenticated)
+                throw HttpError.Forbidden("User is still authenticated");
+
             if (dto.Name == null || dto.Password == null)
                 throw HttpError.InternalServerError("Username or password is null");
 
@@ -79,7 +98,15 @@ namespace ContentAggregator.Services.Auth
             claims.AddRange(roles.Select(x => new Claim(ClaimTypes.Role, x)));
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            return new ClaimsPrincipal(identity);
+            var principal = new ClaimsPrincipal(identity);
+            var authProperties = new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                ExpiresUtc = DateTimeOffset.Now.AddDays(1),
+                IsPersistent = dto.RememberMe
+            };
+
+            await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
         }
 
         public async Task RegisterUserAsync(UserRegisterDto dto)

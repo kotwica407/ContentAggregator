@@ -12,6 +12,8 @@ namespace ContentAggregator.Web.Extensions
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IHashRepository, HashRepository>();
             services.AddScoped<IAuthService, AuthService>();
+
+            services.AddHttpContextAccessor();
         }
     }
 }

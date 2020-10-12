@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ContentAggregator.Context.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20201009140434_Initial")]
+    [Migration("20201012134215_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace ContentAggregator.Context.Migrations
                 .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            modelBuilder.Entity("ContentAggregator.Context.Entities.HashEntity", b =>
+            modelBuilder.Entity("ContentAggregator.Context.Entities.Hash", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("text");
@@ -31,7 +31,7 @@ namespace ContentAggregator.Context.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("HashEntities");
+                    b.ToTable("Hashes");
                 });
 
             modelBuilder.Entity("ContentAggregator.Context.Entities.User", b =>

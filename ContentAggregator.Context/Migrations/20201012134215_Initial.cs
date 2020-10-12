@@ -7,7 +7,7 @@ namespace ContentAggregator.Context.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "HashEntities",
+                name: "Hashes",
                 columns: table => new
                 {
                     UserId = table.Column<string>(nullable: false),
@@ -15,7 +15,7 @@ namespace ContentAggregator.Context.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_HashEntities", x => x.UserId);
+                    table.PrimaryKey("PK_Hashes", x => x.UserId);
                 });
 
             migrationBuilder.CreateTable(
@@ -37,7 +37,7 @@ namespace ContentAggregator.Context.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "HashEntities");
+                name: "Hashes");
 
             migrationBuilder.DropTable(
                 name: "Users");

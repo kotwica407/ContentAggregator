@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ContentAggregator.Models.Dtos
+﻿namespace ContentAggregator.Models.Dtos
 {
     public class LoginDto
     {

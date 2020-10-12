@@ -1,10 +1,7 @@
-﻿using ContentAggregator.Models.Dtos;
+﻿using System.Threading.Tasks;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Services.Auth;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace ContentAggregator.Web.Controllers
 {
@@ -13,6 +10,7 @@ namespace ContentAggregator.Web.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+
         public AuthController(IAuthService authService)
         {
             _authService = authService;
@@ -21,16 +19,7 @@ namespace ContentAggregator.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            if (HttpContext.User.Identity.IsAuthenticated)
-                return BadRequest("User is still authenticated");
-            var principal = await _authService.LoginUserAsync(dto);
-            var authProperties = new AuthenticationProperties
-            {
-                AllowRefresh = true,
-                ExpiresUtc = DateTimeOffset.Now.AddDays(1),
-                IsPersistent = dto.RememberMe
-            };
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+            await _authService.LoginUserAsync(dto);
             return Ok("Logged in");
         }
 
@@ -44,9 +33,7 @@ namespace ContentAggregator.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            if (!HttpContext.User.Identity.IsAuthenticated)
-                return Unauthorized("");
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _authService.Logout();
             return Ok("");
         }
     }
