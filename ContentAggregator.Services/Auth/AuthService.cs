@@ -38,7 +38,7 @@ namespace ContentAggregator.Services.Auth
                 return false;
             string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
             if (savedPasswordHash == null)
-                throw HttpError.NotFound("Password not found")
+                throw HttpError.NotFound("Password not found");
             byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
             byte[] salt = new byte[16];
             Array.Copy(hashBytes, 0, salt, 0, 16);
