@@ -14,10 +14,13 @@ namespace ContentAggregator.Repositories.Mappings
             {
                 Id = post.Id,
                 Rate = post.Rate,
+                Title = post.Title,
                 Content = post.Content,
                 CreationTime = post.CreationTime,
                 LastUpdateTime = post.LastUpdateTime,
-                Comments = post.Comments.Select(CommentsMapper.Map).ToList()
+                Comments = post.Comments.Select(CommentsMapper.Map).ToList(),
+                AuthorId = post.AuthorId,
+                Tags = post.Tags
             };
         }
 
@@ -30,10 +33,13 @@ namespace ContentAggregator.Repositories.Mappings
             {
                 Id = post.Id,
                 Rate = post.Rate,
+                Title = post.Title,
                 Content = post.Content,
                 CreationTime = post.CreationTime,
                 LastUpdateTime = post.LastUpdateTime,
-                Comments = post.Comments.Select(CommentsMapper.Map).ToArray()
+                Comments = post.Comments.Select(CommentsMapper.Map).ToArray(),
+                AuthorId = post.AuthorId,
+                Tags = post.Tags
             };
         }
     }

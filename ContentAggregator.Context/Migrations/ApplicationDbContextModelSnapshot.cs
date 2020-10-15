@@ -48,8 +48,6 @@ namespace ContentAggregator.Context.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AuthorId");
-
                     b.HasIndex("PostId");
 
                     b.ToTable("Comments");
@@ -95,9 +93,12 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<string[]>("Tags")
                         .HasColumnType("text[]");
 
-                    b.HasKey("Id");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(50);
 
-                    b.HasIndex("AuthorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Posts");
                 });
@@ -130,8 +131,6 @@ namespace ContentAggregator.Context.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
 
                     b.HasIndex("CommentId");
 
@@ -191,12 +190,6 @@ namespace ContentAggregator.Context.Migrations
 
             modelBuilder.Entity("ContentAggregator.Context.Entities.Comment", b =>
                 {
-                    b.HasOne("ContentAggregator.Context.Entities.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ContentAggregator.Context.Entities.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
@@ -204,23 +197,8 @@ namespace ContentAggregator.Context.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ContentAggregator.Context.Entities.Post", b =>
-                {
-                    b.HasOne("ContentAggregator.Context.Entities.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ContentAggregator.Context.Entities.Response", b =>
                 {
-                    b.HasOne("ContentAggregator.Context.Entities.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ContentAggregator.Context.Entities.Comment", "Comment")
                         .WithMany("Responses")
                         .HasForeignKey("CommentId")

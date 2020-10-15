@@ -13,7 +13,7 @@ namespace ContentAggregator.Repositories.Mappings
             {
                 Id = comment.Id,
                 Rate = comment.Rate,
-                Author = UserMapper.Map(comment.Author),
+                AuthorId = comment.AuthorId,
                 Content = comment.Content,
                 CreationTime = comment.CreationTime,
                 LastUpdateTime = comment.LastUpdateTime,
@@ -21,11 +21,12 @@ namespace ContentAggregator.Repositories.Mappings
                 {
                     Id = comment.Post.Id,
                     Rate = comment.Post.Rate,
+                    Title = comment.Post.Title,
                     Content = comment.Post.Content,
                     CreationTime = comment.Post.CreationTime,
                     LastUpdateTime = comment.Post.LastUpdateTime,
-                    Author = UserMapper.Map(comment.Post.Author),
-                    Tags = comment.Post.Tags
+                    AuthorId = comment.Post.AuthorId,
+                    Tags = comment.Post.Tags,
                 }
             };
         }
@@ -40,7 +41,7 @@ namespace ContentAggregator.Repositories.Mappings
             {
                 Id = comment.Id,
                 Rate = comment.Rate,
-                Author = UserMapper.Map(comment.Author),
+                AuthorId = comment.AuthorId,
                 Content = comment.Content,
                 CreationTime = comment.CreationTime,
                 LastUpdateTime = comment.LastUpdateTime,
@@ -48,10 +49,11 @@ namespace ContentAggregator.Repositories.Mappings
                 {
                     Id = comment.Post.Id,
                     Rate = comment.Post.Rate,
+                    Title = comment.Post.Title,
                     Content = comment.Post.Content,
                     CreationTime = comment.Post.CreationTime,
                     LastUpdateTime = comment.Post.LastUpdateTime,
-                    Author = UserMapper.Map(comment.Post.Author),
+                    AuthorId = comment.Post.AuthorId,
                     Tags = comment.Post.Tags
                 }
             };

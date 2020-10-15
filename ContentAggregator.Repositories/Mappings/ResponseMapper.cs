@@ -12,12 +12,12 @@ namespace ContentAggregator.Repositories.Mappings
             return new Response
             {
                 Id = response.Id,
-                Author = UserMapper.Map(response.Author),
+                AuthorId = response.AuthorId,
                 Comment = new Comment
                 {
                     Id = response.Comment.Id,
                     Rate = response.Comment.Rate,
-                    Author = UserMapper.Map(response.Comment.Author),
+                    AuthorId = response.Comment.AuthorId,
                     Content = response.Comment.Content,
                     CreationTime = response.Comment.CreationTime,
                     LastUpdateTime = response.Comment.LastUpdateTime,
@@ -25,10 +25,11 @@ namespace ContentAggregator.Repositories.Mappings
                     {
                         Id = response.Comment.Post.Id,
                         Rate = response.Comment.Post.Rate,
+                        Title = response.Comment.Post.Title,
                         Content = response.Comment.Post.Content,
                         CreationTime = response.Comment.Post.CreationTime,
                         LastUpdateTime = response.Comment.Post.LastUpdateTime,
-                        Author = UserMapper.Map(response.Comment.Post.Author),
+                        AuthorId = response.Comment.Post.AuthorId,
                         Tags = response.Comment.Post.Tags
                     }
                 },
@@ -48,12 +49,12 @@ namespace ContentAggregator.Repositories.Mappings
             return new Models.Model.Response
             {
                 Id = response.Id,
-                Author = UserMapper.Map(response.Author),
+                AuthorId = response.AuthorId,
                 Comment = new Models.Model.Comment
                 {
                     Id = response.Comment.Id,
                     Rate = response.Comment.Rate,
-                    Author = UserMapper.Map(response.Comment.Author),
+                    AuthorId = response.Comment.AuthorId,
                     Content = response.Comment.Content,
                     CreationTime = response.Comment.CreationTime,
                     LastUpdateTime = response.Comment.LastUpdateTime,
@@ -61,10 +62,11 @@ namespace ContentAggregator.Repositories.Mappings
                     {
                         Id = response.Comment.Post.Id,
                         Rate = response.Comment.Post.Rate,
+                        Title = response.Comment.Post.Title,
                         Content = response.Comment.Post.Content,
                         CreationTime = response.Comment.Post.CreationTime,
                         LastUpdateTime = response.Comment.Post.LastUpdateTime,
-                        Author = UserMapper.Map(response.Comment.Post.Author),
+                        AuthorId = response.Comment.Post.AuthorId,
                         Tags = response.Comment.Post.Tags
                     }
                 },

@@ -10,7 +10,7 @@ namespace ContentAggregator.Context.Entities
         [Key]
         public string Id { get; set; }
         [Required]
-        public User Author { get; set; }
+        public string AuthorId { get; set; }
         [Required]
         [MaxLength(Consts.CommentContentLength)]
         public string Content { get; set; }

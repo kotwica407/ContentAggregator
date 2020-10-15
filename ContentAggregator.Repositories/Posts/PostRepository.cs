@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ContentAggregator.Context;
+using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories.Mappings;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ namespace ContentAggregator.Repositories.Posts
         {
             IIncludableQueryable<Context.Entities.Post, List<Comment>> entities = _applicationDbContext.Posts
                .AsNoTracking()
-               .Where(x => x.Author.Id == authorId)
+               .Where(x => x.AuthorId == authorId)
                .Include(x => x.Comments);
             return Task.FromResult(entities.AsEnumerable().Select(PostMapper.Map).ToArray());
         }
@@ -59,7 +60,7 @@ namespace ContentAggregator.Repositories.Posts
         {
             Context.Entities.Post entity = PostMapper.Map(post);
             if (entity == null)
-                throw new Exception("Post entity cannot be null");
+                throw HttpError.InternalServerError("Post entity cannot be null");
             await _applicationDbContext.Posts.AddAsync(entity);
             await _applicationDbContext.SaveChangesAsync();
         }
@@ -102,7 +103,7 @@ namespace ContentAggregator.Repositories.Posts
             var entity = await _applicationDbContext.Posts.FirstOrDefaultAsync(x => x.Id == id);
 
             if (entity == null)
-                throw new Exception("Post entity cannot be null");
+                throw HttpError.InternalServerError("Post entity cannot be null");
 
             entity.Rate++;
             await _applicationDbContext.SaveChangesAsync();
@@ -113,7 +114,7 @@ namespace ContentAggregator.Repositories.Posts
             var entity = await _applicationDbContext.Posts.FirstOrDefaultAsync(x => x.Id == id);
 
             if (entity == null)
-                throw new Exception("Post entity cannot be null");
+                throw HttpError.InternalServerError("Post entity cannot be null");
 
             entity.Rate--;
             await _applicationDbContext.SaveChangesAsync();

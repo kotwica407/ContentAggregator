@@ -2,6 +2,7 @@
 {
     public class Post : PostBase
     {
+        public string Title { get; set; }
         public string[] Tags { get; set; }
         public Comment[] Comments { get; set; }
     }

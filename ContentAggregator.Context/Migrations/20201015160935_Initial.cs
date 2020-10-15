@@ -20,10 +20,29 @@ namespace ContentAggregator.Context.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Posts",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    AuthorId = table.Column<string>(nullable: false),
+                    Title = table.Column<string>(maxLength: 50, nullable: false),
+                    Content = table.Column<string>(maxLength: 2000, nullable: false),
+                    Tags = table.Column<string[]>(nullable: true),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    LastUpdateTime = table.Column<DateTime>(nullable: false),
+                    Rate = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Posts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tags",
                 columns: table => new
                 {
-                    Name = table.Column<string>(nullable: false)
+                    Name = table.Column<string>(nullable: false),
+                    PostsNumber = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,34 +57,15 @@ namespace ContentAggregator.Context.Migrations
                     Name = table.Column<string>(maxLength: 25, nullable: false),
                     Email = table.Column<string>(nullable: false),
                     CredentialLevel = table.Column<byte>(nullable: false),
-                    Description = table.Column<string>(maxLength: 300, nullable: true)
+                    Description = table.Column<string>(maxLength: 300, nullable: true),
+                    BlackListedTags = table.Column<string[]>(nullable: true),
+                    FollowedTags = table.Column<string[]>(nullable: true),
+                    BlackListedUserIds = table.Column<string[]>(nullable: true),
+                    FollowedUserIds = table.Column<string[]>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Posts",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    AuthorId = table.Column<string>(nullable: false),
-                    Content = table.Column<string>(maxLength: 2000, nullable: false),
-                    Tags = table.Column<string[]>(nullable: true),
-                    CreationTime = table.Column<DateTime>(nullable: false),
-                    LastUpdateTime = table.Column<DateTime>(nullable: false),
-                    Rate = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Posts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Posts_Users_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,12 +83,6 @@ namespace ContentAggregator.Context.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Comments_Users_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Comments_Posts_PostId",
                         column: x => x.PostId,
@@ -113,12 +107,6 @@ namespace ContentAggregator.Context.Migrations
                 {
                     table.PrimaryKey("PK_Responses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Responses_Users_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_Responses_Comments_CommentId",
                         column: x => x.CommentId,
                         principalTable: "Comments",
@@ -127,24 +115,9 @@ namespace ContentAggregator.Context.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_AuthorId",
-                table: "Comments",
-                column: "AuthorId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Comments_PostId",
                 table: "Comments",
                 column: "PostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_AuthorId",
-                table: "Posts",
-                column: "AuthorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Responses_AuthorId",
-                table: "Responses",
-                column: "AuthorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Responses_CommentId",
@@ -164,13 +137,13 @@ namespace ContentAggregator.Context.Migrations
                 name: "Tags");
 
             migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
                 name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "Posts");
-
-            migrationBuilder.DropTable(
-                name: "Users");
         }
     }
 }
