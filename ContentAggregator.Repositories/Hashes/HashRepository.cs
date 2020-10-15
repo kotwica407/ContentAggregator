@@ -8,40 +8,40 @@ namespace ContentAggregator.Repositories.Hashes
 {
     public class HashRepository : IHashRepository
     {
-        private readonly UserContext _userContext;
+        private readonly ApplicationDbContext _applicationDbContext;
 
-        public HashRepository(UserContext userContext)
+        public HashRepository(ApplicationDbContext applicationDbContext)
         {
-            _userContext = userContext;
+            _applicationDbContext = applicationDbContext;
         }
 
         public async Task CreateOrUpdate(Hash hash)
         {
             Context.Entities.Hash entity =
-                await _userContext.Hashes.FirstOrDefaultAsync(x => x.UserId == hash.UserId);
+                await _applicationDbContext.Hashes.FirstOrDefaultAsync(x => x.UserId == hash.UserId);
 
             if (entity != null)
                 entity.PasswordHash = hash.PasswordHash;
             else
-                await _userContext.Hashes.AddAsync(HashMapper.Map(hash));
+                await _applicationDbContext.Hashes.AddAsync(HashMapper.Map(hash));
 
-            await _userContext.SaveChangesAsync();
+            await _applicationDbContext.SaveChangesAsync();
         }
 
         public async Task Delete(string userId)
         {
-            Context.Entities.Hash entity = await _userContext.Hashes.FirstOrDefaultAsync(x => x.UserId == userId);
+            Context.Entities.Hash entity = await _applicationDbContext.Hashes.FirstOrDefaultAsync(x => x.UserId == userId);
             if (entity != null)
             {
-                _userContext.Hashes.Remove(entity);
-                await _userContext.SaveChangesAsync();
+                _applicationDbContext.Hashes.Remove(entity);
+                await _applicationDbContext.SaveChangesAsync();
             }
         }
 
         public async Task<Hash> Get(string userId)
         {
             Context.Entities.Hash entity =
-                await _userContext.Hashes.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
+                await _applicationDbContext.Hashes.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId);
             return HashMapper.Map(entity);
         }
     }

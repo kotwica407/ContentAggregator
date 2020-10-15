@@ -9,11 +9,11 @@ namespace ContentAggregator.Repositories.Users
 {
     public class UserRepository : IUserRepository
     {
-        private readonly UserContext _userContext;
+        private readonly ApplicationDbContext _applicationDbContext;
 
-        public UserRepository(UserContext userContext)
+        public UserRepository(ApplicationDbContext applicationDbContext)
         {
-            _userContext = userContext;
+            _applicationDbContext = applicationDbContext;
         }
 
         public async Task Create(User user)
@@ -21,37 +21,37 @@ namespace ContentAggregator.Repositories.Users
             Context.Entities.User entity = UserMapper.Map(user);
             if (entity == null)
                 throw new Exception("User entity cannot be null");
-            await _userContext.Users.AddAsync(entity);
-            await _userContext.SaveChangesAsync();
+            await _applicationDbContext.Users.AddAsync(entity);
+            await _applicationDbContext.SaveChangesAsync();
         }
 
         public async Task Delete(string userId)
         {
-            Context.Entities.User existingEntity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            Context.Entities.User existingEntity = await _applicationDbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
             if (existingEntity != null)
             {
-                _userContext.Users.Remove(existingEntity);
-                await _userContext.SaveChangesAsync();
+                _applicationDbContext.Users.Remove(existingEntity);
+                await _applicationDbContext.SaveChangesAsync();
             }
         }
 
         public async Task<User> GetByEmail(string emailAddress)
         {
             Context.Entities.User entity =
-                await _userContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == emailAddress);
+                await _applicationDbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == emailAddress);
             return UserMapper.Map(entity);
         }
 
         public async Task<User> GetByUserName(string userName)
         {
             Context.Entities.User entity =
-                await _userContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Name == userName);
+                await _applicationDbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Name == userName);
             return UserMapper.Map(entity);
         }
 
         public async Task<bool> Update(User user)
         {
-            Context.Entities.User entity = await _userContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
+            Context.Entities.User entity = await _applicationDbContext.Users.FirstOrDefaultAsync(x => x.Id == user.Id);
             if (entity == null)
                 return false;
 
@@ -62,7 +62,7 @@ namespace ContentAggregator.Repositories.Users
 
             try
             {
-                return await _userContext.SaveChangesAsync() > 0;
+                return await _applicationDbContext.SaveChangesAsync() > 0;
             }
             catch (Exception)
             {
