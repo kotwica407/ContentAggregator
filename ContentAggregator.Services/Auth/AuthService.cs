@@ -24,8 +24,8 @@ namespace ContentAggregator.Services.Auth
     {
         private readonly IHashRepository _hashRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserRepository _userRepository;
         private readonly ILogger _logger;
+        private readonly IUserRepository _userRepository;
 
         public AuthService(
             IHashRepository hashRepository,
@@ -47,7 +47,7 @@ namespace ContentAggregator.Services.Auth
                 _logger.LogWarning("You cannot logout if you are not logged in");
                 throw HttpError.Unauthorized("");
             }
-                
+
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
@@ -117,7 +117,37 @@ namespace ContentAggregator.Services.Auth
             await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
         }
 
-        public async Task RegisterUserAsync(UserRegisterDto dto)
+        public Task RegisterUserAsync(UserRegisterDto dto) => RegisterUserAsync(dto, CredentialLevel.User);
+
+        public Task RegisterAdminAsync(UserRegisterDto dto) => RegisterUserAsync(dto,
+            CredentialLevel.User | CredentialLevel.Moderator | CredentialLevel.Admin);
+
+        private static string CreateHash(string password)
+        {
+            byte[] salt;
+            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
+            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
+            byte[] hash = pbkdf2.GetBytes(20);
+            byte[] hashBytes = new byte[36];
+            Array.Copy(salt, 0, hashBytes, 0, 16);
+            Array.Copy(hash, 0, hashBytes, 16, 20);
+            return Convert.ToBase64String(hashBytes);
+        }
+
+        private static bool IsValidEmail(string emailAddress)
+        {
+            try
+            {
+                var m = new MailAddress(emailAddress);
+                return true;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+        }
+
+        private async Task RegisterUserAsync(UserRegisterDto dto, CredentialLevel credentialLevel)
         {
             #region Validate
 
@@ -148,7 +178,7 @@ namespace ContentAggregator.Services.Auth
             var user = new User
             {
                 Id = Guid.NewGuid().ToString(),
-                CredentialLevel = CredentialLevel.User,
+                CredentialLevel = credentialLevel,
                 Description = dto.Description,
                 Email = dto.Email,
                 Name = dto.Name
@@ -159,31 +189,6 @@ namespace ContentAggregator.Services.Auth
                 UserId = user.Id,
                 PasswordHash = CreateHash(dto.Password)
             });
-        }
-
-        private string CreateHash(string password)
-        {
-            byte[] salt;
-            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
-            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-            byte[] hashBytes = new byte[36];
-            Array.Copy(salt, 0, hashBytes, 0, 16);
-            Array.Copy(hash, 0, hashBytes, 16, 20);
-            return Convert.ToBase64String(hashBytes);
-        }
-
-        private bool IsValidEmail(string emailAddress)
-        {
-            try
-            {
-                var m = new MailAddress(emailAddress);
-                return true;
-            }
-            catch (FormatException)
-            {
-                return false;
-            }
         }
     }
 }

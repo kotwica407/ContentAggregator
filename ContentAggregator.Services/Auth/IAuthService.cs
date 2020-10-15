@@ -8,6 +8,7 @@ namespace ContentAggregator.Services.Auth
         Task<bool> CheckPasswordAsync(LoginDto dto);
         Task LoginUserAsync(LoginDto dto);
         Task RegisterUserAsync(UserRegisterDto dto);
+        Task RegisterAdminAsync(UserRegisterDto dto);
         Task Logout();
     }
 }
