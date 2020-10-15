@@ -7,6 +7,9 @@ namespace ContentAggregator.Repositories.Mappings
     {
         internal static Post Map(Models.Model.Post post)
         {
+            if (post == null)
+                return null;
+
             return new Post
             {
                 Id = post.Id,
@@ -20,6 +23,9 @@ namespace ContentAggregator.Repositories.Mappings
 
         internal static Models.Model.Post Map(Post post)
         {
+            if (post == null)
+                return null;
+
             return new Models.Model.Post
             {
                 Id = post.Id,

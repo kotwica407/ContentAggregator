@@ -4,8 +4,12 @@ namespace ContentAggregator.Repositories.Mappings
 {
     public static class ResponseMapper
     {
-        internal static Response Map(Models.Model.Response response) =>
-            new Response
+        internal static Response Map(Models.Model.Response response)
+        {
+            if (response == null)
+                return null;
+
+            return new Response
             {
                 Id = response.Id,
                 Author = UserMapper.Map(response.Author),
@@ -33,9 +37,15 @@ namespace ContentAggregator.Repositories.Mappings
                 Rate = response.Rate,
                 Content = response.Content
             };
+        }
 
-        internal static Models.Model.Response Map(Response response) =>
-            new Models.Model.Response
+
+        internal static Models.Model.Response Map(Response response)
+        {
+            if (response == null)
+                return null;
+
+            return new Models.Model.Response
             {
                 Id = response.Id,
                 Author = UserMapper.Map(response.Author),
@@ -63,5 +73,7 @@ namespace ContentAggregator.Repositories.Mappings
                 Rate = response.Rate,
                 Content = response.Content
             };
+        }
+            
     }
 }

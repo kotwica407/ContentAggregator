@@ -4,8 +4,12 @@ namespace ContentAggregator.Repositories.Mappings
 {
     public static class CommentsMapper
     {
-        internal static Comment Map(Models.Model.Comment comment) =>
-            new Comment
+        internal static Comment Map(Models.Model.Comment comment)
+        {
+            if (comment == null)
+                return null;
+
+            return new Comment
             {
                 Id = comment.Id,
                 Rate = comment.Rate,
@@ -24,9 +28,15 @@ namespace ContentAggregator.Repositories.Mappings
                     Tags = comment.Post.Tags
                 }
             };
+        }
+            
 
-        internal static Models.Model.Comment Map(Comment comment) =>
-            new Models.Model.Comment
+        internal static Models.Model.Comment Map(Comment comment)
+        {
+            if (comment == null)
+                return null;
+
+            return new Models.Model.Comment
             {
                 Id = comment.Id,
                 Rate = comment.Rate,
@@ -45,5 +55,7 @@ namespace ContentAggregator.Repositories.Mappings
                     Tags = comment.Post.Tags
                 }
             };
+        }
+            
     }
 }
