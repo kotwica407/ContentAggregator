@@ -1,4 +1,5 @@
-﻿using ContentAggregator.Context.Entities;
+﻿using System.Linq.Expressions;
+using ContentAggregator.Context.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Context

@@ -18,7 +18,7 @@ namespace ContentAggregator.Context.Entities
         public DateTime LastUpdateTime { get; set; }
         [Required]
         public Post Post { get; set; }
-        public ICollection<Response> Responses { get; set; }
+        public List<Response> Responses { get; set; }
         [Required]
         public int Rate { get; set; }
     }

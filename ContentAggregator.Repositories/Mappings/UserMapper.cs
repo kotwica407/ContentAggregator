@@ -15,7 +15,11 @@ namespace ContentAggregator.Repositories.Mappings
                 Description = user.Description,
                 Email = user.Email,
                 Id = user.Id,
-                Name = user.Name
+                Name = user.Name,
+                BlackListedTags = user.BlackListedTags,
+                BlackListedUserIds = user.BlackListedUserIds,
+                FollowedTags = user.FollowedTags,
+                FollowedUserIds = user.FollowedUserIds
             };
         }
 
@@ -30,7 +34,11 @@ namespace ContentAggregator.Repositories.Mappings
                 Description = user.Description,
                 Email = user.Email,
                 Id = user.Id,
-                Name = user.Name
+                Name = user.Name,
+                BlackListedTags = user.BlackListedTags,
+                BlackListedUserIds = user.BlackListedUserIds,
+                FollowedTags = user.FollowedTags,
+                FollowedUserIds = user.FollowedUserIds
             };
         }
     }

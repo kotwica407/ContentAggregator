@@ -21,5 +21,9 @@ namespace ContentAggregator.Context.Entities
 
         [MaxLength(Consts.DescriptionMaxLength)]
         public string Description { get; set; }
+        public string[] BlackListedTags { get; set; }
+        public string[] FollowedTags { get; set; }
+        public string[] BlackListedUserIds { get; set; }
+        public string[] FollowedUserIds { get; set; }
     }
 }

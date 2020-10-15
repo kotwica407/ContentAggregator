@@ -17,7 +17,7 @@ namespace ContentAggregator.Context.Entities
         public string[] Tags { get; set; }
         public DateTime CreationTime { get; set; }
         public DateTime LastUpdateTime { get; set; }
-        public ICollection<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; }
         [Required]
         public int Rate { get; set; }
     }

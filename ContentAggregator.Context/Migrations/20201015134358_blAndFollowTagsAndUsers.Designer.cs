@@ -3,15 +3,17 @@ using System;
 using ContentAggregator.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ContentAggregator.Context.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201015134358_blAndFollowTagsAndUsers")]
+    partial class blAndFollowTagsAndUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -142,9 +144,6 @@ namespace ContentAggregator.Context.Migrations
                 {
                     b.Property<string>("Name")
                         .HasColumnType("text");
-
-                    b.Property<int>("PostsNumber")
-                        .HasColumnType("integer");
 
                     b.HasKey("Name");
 

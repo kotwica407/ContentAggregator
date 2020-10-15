@@ -6,5 +6,6 @@ namespace ContentAggregator.Context.Entities
     {
         [Key]
         public string Name { get; set; }
+        public int PostsNumber { get; set; }
     }
 }
