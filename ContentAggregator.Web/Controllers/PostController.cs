@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ContentAggregator.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("[controller]")]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -26,9 +26,10 @@ namespace ContentAggregator.Web.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get([FromRoute] string id)
         {
-            return Ok();
+            var post = await _postService.Get(id);
+            return Ok(post);
         }
     }
 }

@@ -7,5 +7,6 @@ namespace ContentAggregator.Services.Posts
     public interface IPostService
     {
         Task<Post> Create(CreatePostDto dto);
+        Task<Post> Get(string id);
     }
 }

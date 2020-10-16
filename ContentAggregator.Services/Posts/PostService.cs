@@ -102,5 +102,10 @@ namespace ContentAggregator.Services.Posts
 
             return result.Distinct().ToArray();
         }
+
+        public Task<Post> Get(string id)
+        {
+            return _postRepository.GetById(id);
+        }
     }
 }

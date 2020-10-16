@@ -35,7 +35,10 @@ namespace ContentAggregator.Web
                 options.Secure = CookieSecurePolicy.Always;
             });
             services.AddControllers()
-               .AddJsonOptions(options => options.JsonSerializerOptions.WriteIndented = true);
+               .AddJsonOptions(options => {
+                   options.JsonSerializerOptions.WriteIndented = true;
+                   options.JsonSerializerOptions.IgnoreNullValues = true;
+               });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
