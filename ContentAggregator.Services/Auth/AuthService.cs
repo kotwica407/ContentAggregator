@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
 using ContentAggregator.Common.Extensions;
@@ -13,6 +12,7 @@ using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories.Hashes;
 using ContentAggregator.Repositories.Users;
+using ContentAggregator.Services.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -51,29 +51,6 @@ namespace ContentAggregator.Services.Auth
             await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
-        public async Task<bool> CheckPasswordAsync(LoginDto dto)
-        {
-            if (dto.Name == null || dto.Password == null)
-                return false;
-
-            User user = await _userRepository.GetByUserName(dto.Name);
-            if (user == null)
-                return false;
-            string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
-            if (savedPasswordHash == null)
-                throw HttpError.NotFound("Password not found");
-            byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
-            byte[] salt = new byte[16];
-            Array.Copy(hashBytes, 0, salt, 0, 16);
-            var pbkdf2 = new Rfc2898DeriveBytes(dto.Password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-            for (var i = 0; i < 20; i++)
-                if (hashBytes[i + 16] != hash[i])
-                    return false;
-
-            return true;
-        }
-
         public async Task LoginUserAsync(LoginDto dto)
         {
             HttpContext context = _httpContextAccessor.HttpContext;
@@ -86,17 +63,15 @@ namespace ContentAggregator.Services.Auth
             User user = await _userRepository.GetByUserName(dto.Name);
             if (user == null)
                 throw HttpError.Unauthorized("Wrong username or password");
+
             string savedPasswordHash = (await _hashRepository.Get(user.Id))?.PasswordHash;
+
             if (savedPasswordHash == null)
                 throw HttpError.InternalServerError("User has no password");
-            byte[] hashBytes = Convert.FromBase64String(savedPasswordHash);
-            byte[] salt = new byte[16];
-            Array.Copy(hashBytes, 0, salt, 0, 16);
-            var pbkdf2 = new Rfc2898DeriveBytes(dto.Password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-            for (var i = 0; i < 20; i++)
-                if (hashBytes[i + 16] != hash[i])
-                    throw HttpError.Unauthorized("Wrong username or password");
+
+            if (!HashHelpers.CheckPasswordWithHash(dto.Password, savedPasswordHash))
+                throw HttpError.Unauthorized("Wrong username or password");
+
             string[] roles = user.CredentialLevel.GetAllPossibleRoles();
             List<Claim> claims = new List<Claim>
             {
@@ -121,18 +96,6 @@ namespace ContentAggregator.Services.Auth
 
         public Task RegisterAdminAsync(UserRegisterDto dto) => RegisterUserAsync(dto,
             CredentialLevel.User | CredentialLevel.Moderator | CredentialLevel.Admin);
-
-        private static string CreateHash(string password)
-        {
-            byte[] salt;
-            new RNGCryptoServiceProvider().GetBytes(salt = new byte[16]);
-            var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000);
-            byte[] hash = pbkdf2.GetBytes(20);
-            byte[] hashBytes = new byte[36];
-            Array.Copy(salt, 0, hashBytes, 0, 16);
-            Array.Copy(hash, 0, hashBytes, 16, 20);
-            return Convert.ToBase64String(hashBytes);
-        }
 
         private static bool IsValidEmail(string emailAddress)
         {
@@ -187,7 +150,7 @@ namespace ContentAggregator.Services.Auth
             await _hashRepository.CreateOrUpdate(new Hash
             {
                 UserId = user.Id,
-                PasswordHash = CreateHash(dto.Password)
+                PasswordHash = HashHelpers.CreateHash(dto.Password)
             });
         }
     }
