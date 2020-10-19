@@ -8,15 +8,21 @@ namespace ContentAggregator.Context.Entities
     {
         [Key]
         public string Id { get; set; }
+
         [Required]
         public string AuthorId { get; set; }
+
         [Required]
         [MaxLength(Consts.CommentContentLength)]
         public string Content { get; set; }
+
         public DateTime CreationTime { get; set; }
+
         public DateTime LastUpdateTime { get; set; }
+
         [Required]
         public Comment Comment { get; set; }
+
         [Required]
         public int Rate { get; set; }
     }
