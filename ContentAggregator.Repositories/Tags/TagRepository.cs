@@ -1,74 +1,73 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using ContentAggregator.Context;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories.Mappings;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Repositories.Tags
 {
     public class TagRepository : ITagRepository
     {
-        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public TagRepository(ApplicationDbContext applicationDbContext)
+        public TagRepository(ApplicationDbContext context,
+            IMapper mapper)
         {
-            _applicationDbContext = applicationDbContext;
+            _context = context;
+            _mapper = mapper;
         }
 
         public Task<Tag[]> GetAll()
         {
-            IQueryable<Context.Entities.Tag> entities = _applicationDbContext.Tags
-               .AsNoTracking();
-            return Task.FromResult(entities.AsEnumerable().Select(TagMapper.Map).ToArray());
+            return _context.Tags
+               .AsNoTracking()
+               .ProjectTo<Tag>(_mapper.ConfigurationProvider)
+               .ToArrayAsync();
         }
 
-        public async Task<Tag> GetByName(string tagName)
+        public Task<Tag> GetByName(string tagName)
         {
-            Context.Entities.Tag entity = await _applicationDbContext.Tags
+            return _context.Tags
                .AsNoTracking()
+               .ProjectTo<Tag>(_mapper.ConfigurationProvider)
                .FirstOrDefaultAsync(x => x.Name == tagName);
-
-            return TagMapper.Map(entity);
         }
 
         public async Task Create(Tag tag)
         {
-            Context.Entities.Tag existingEntity =
-                await _applicationDbContext.Tags.FirstOrDefaultAsync(x => x.Name == tag.Name);
-            if (existingEntity != null)
-                return;
-
-            Context.Entities.Tag newEntity = TagMapper.Map(tag);
-
-            await _applicationDbContext.Tags.AddAsync(newEntity);
-            await _applicationDbContext.SaveChangesAsync();
+            var entity = _mapper.Map<Context.Entities.Tag>(tag);
+            await _context.Tags.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Create(Tag[] tags)
         {
             Context.Entities.Tag[] existingEntitiesWithSameName =
-                await _applicationDbContext.Tags.AsNoTracking().Where(x => tags.Select(t => t.Name).Contains(x.Name))
+                await _context.Tags.AsNoTracking()
+                   .Where(x => tags.Select(t => t.Name).Contains(x.Name))
                    .ToArrayAsync();
 
             IEnumerable<Context.Entities.Tag> newEntities = tags
-               .Where(t => !existingEntitiesWithSameName.Select(x => x.Name).Contains(t.Name)).Select(TagMapper.Map);
+               .Where(t => !existingEntitiesWithSameName.Select(x => x.Name).Contains(t.Name)).Select(_mapper.Map<Context.Entities.Tag>);
 
-            await _applicationDbContext.Tags.AddRangeAsync(newEntities);
-            await _applicationDbContext.SaveChangesAsync();
+            await _context.Tags.AddRangeAsync(newEntities);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(string tagName)
         {
-            Context.Entities.Tag entity = await _applicationDbContext.Tags
+            Context.Entities.Tag entity = await _context.Tags
                .AsNoTracking()
                .FirstOrDefaultAsync(x => x.Name == tagName);
 
             if (entity != null)
             {
-                _applicationDbContext.Tags.Remove(entity);
-                await _applicationDbContext.SaveChangesAsync();
+                _context.Tags.Remove(entity);
+                await _context.SaveChangesAsync();
             }
         }
     }

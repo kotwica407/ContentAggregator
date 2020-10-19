@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using ContentAggregator.Context.Entities;
+﻿using ContentAggregator.Context.Entities;
 
 namespace ContentAggregator.Repositories.Mappings
 {

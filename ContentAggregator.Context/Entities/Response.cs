@@ -4,11 +4,8 @@ using ContentAggregator.Common;
 
 namespace ContentAggregator.Context.Entities
 {
-    public class Response
+    public class Response : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
-
         [Required]
         public string AuthorId { get; set; }
 

@@ -2,9 +2,8 @@
 
 namespace ContentAggregator.Models.Model
 {
-    public abstract class PostBase
+    public abstract class PostBase : BaseModel
     {
-        public string Id { get; set; }
         public string AuthorId { get; set; }
         public string Content { get; set; }
         public DateTime CreationTime { get; set; }

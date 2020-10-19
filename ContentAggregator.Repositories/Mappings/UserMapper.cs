@@ -2,7 +2,7 @@
 
 namespace ContentAggregator.Repositories.Mappings
 {
-    public class UserMapper
+    public static class UserMapper
     {
         internal static User Map(Context.Entities.User user)
         {

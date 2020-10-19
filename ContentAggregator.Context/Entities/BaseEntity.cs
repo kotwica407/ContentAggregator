@@ -2,9 +2,9 @@
 
 namespace ContentAggregator.Context.Entities
 {
-    public class Hash : BaseEntity
+    public abstract class BaseEntity
     {
-        [Required]
-        public string PasswordHash { get; set; }
+        [Key]
+        public string Id { get; set; }
     }
 }

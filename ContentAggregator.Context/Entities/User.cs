@@ -4,11 +4,8 @@ using ContentAggregator.Models;
 
 namespace ContentAggregator.Context.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
-
         [Required]
         [MaxLength(Consts.UsernameMaxLength)]
         public string Name { get; set; }

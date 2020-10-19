@@ -5,11 +5,8 @@ using ContentAggregator.Common;
 
 namespace ContentAggregator.Context.Entities
 {
-    public class Post
+    public class Post : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
-
         [Required]
         public string AuthorId { get; set; }
 

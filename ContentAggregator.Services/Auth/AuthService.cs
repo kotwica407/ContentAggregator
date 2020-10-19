@@ -10,8 +10,8 @@ using ContentAggregator.Models;
 using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
+using ContentAggregator.Repositories;
 using ContentAggregator.Repositories.Hashes;
-using ContentAggregator.Repositories.Users;
 using ContentAggregator.Services.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,11 +25,11 @@ namespace ContentAggregator.Services.Auth
         private readonly IHashRepository _hashRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
-        private readonly IUserRepository _userRepository;
+        private readonly ICrudRepository<User> _userRepository;
 
         public AuthService(
             IHashRepository hashRepository,
-            IUserRepository userRepository,
+            ICrudRepository<User> userRepository,
             IHttpContextAccessor httpContextAccessor,
             ILogger<AuthService> logger)
         {
@@ -60,7 +60,7 @@ namespace ContentAggregator.Services.Auth
             if (dto.Name == null || dto.Password == null)
                 throw HttpError.InternalServerError("Username or password is null");
 
-            User user = await _userRepository.GetByUserName(dto.Name);
+            User user = (await _userRepository.Find(x => x.Name == dto.Name)).FirstOrDefault();
             if (user == null)
                 throw HttpError.Unauthorized("Wrong username or password");
 
@@ -130,10 +130,10 @@ namespace ContentAggregator.Services.Auth
 
             #region CheckIfUserExists
 
-            if (await _userRepository.GetByUserName(dto.Name) != null)
+            if ((await _userRepository.Find(x => x.Name == dto.Name)).Any())
                 throw HttpError.BadRequest($"There is user with {dto.Name} username");
 
-            if (await _userRepository.GetByEmail(dto.Email) != null)
+            if ((await _userRepository.Find(x => x.Email == dto.Email)).Any())
                 throw HttpError.BadRequest($"There is user with {dto.Email} email address");
 
             #endregion
@@ -149,7 +149,7 @@ namespace ContentAggregator.Services.Auth
             await _userRepository.Create(user);
             await _hashRepository.CreateOrUpdate(new Hash
             {
-                UserId = user.Id,
+                Id = user.Id,
                 PasswordHash = HashHelpers.CreateHash(dto.Password)
             });
         }
