@@ -27,6 +27,7 @@ namespace ContentAggregator.Web.Extensions
             services.AddScoped<IHashRepository, HashRepository>();
             //services.AddScoped<IPostRepository, PostRepository>();
 
+            services.AddScoped<ICrudRepository<Picture>, DbRepository<Picture, Context.Entities.Picture>>();
             services.AddScoped<ICrudRepository<Post>, DbRepository<Post, Context.Entities.Post>>();
             services.AddScoped<ICrudRepository<Comment>, DbRepository<Comment, Context.Entities.Comment>>();
             services.AddScoped<ICrudRepository<Response>, DbRepository<Response, Context.Entities.Response>>();

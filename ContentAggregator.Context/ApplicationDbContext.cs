@@ -15,5 +15,6 @@ namespace ContentAggregator.Context
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Response> Responses { get; set; }
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<Picture> Pictures { get; set; }
     }
 }

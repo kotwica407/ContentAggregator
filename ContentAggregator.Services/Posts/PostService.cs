@@ -38,21 +38,7 @@ namespace ContentAggregator.Services.Posts
 
         public async Task<Post> Create(CreatePostDto dto)
         {
-            #region Validate
-
-            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
-                _logger.LogWarning("You cannot create post if you are not logged in");
-                throw HttpError.Unauthorized("You cannot create post if you are not logged in");
-            }
-
-            if (dto.Content.Length > Consts.PostContentLength)
-                throw HttpError.BadRequest("Content is too long");
-
-            if (dto.Title.Length > Consts.PostTitleLength)
-                throw HttpError.BadRequest("Title is too long");
-
-            #endregion
+            Validate("create", dto.Content, dto.Title);
 
             string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
             User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
@@ -82,5 +68,83 @@ namespace ContentAggregator.Services.Posts
         }
 
         public Task<Post> Get(string id) => _postRepository.GetById(id);
+        public Task<Post[]> Get() => _postRepository.GetAll();
+
+        public async Task Update(string id, UpdatePostDto dto)
+        {
+            Validate("modify", dto.Content, dto.Title);
+
+            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
+            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+
+            Post post = await _postRepository.GetById(id);
+            if (post == null)
+            {
+                _logger.LogWarning($"Post {id} does not exist");
+                throw HttpError.NotFound($"Post {id} does not exist");
+            }
+
+            if (post.AuthorId != user.Id)
+            {
+                _logger.LogWarning($"Post {id} does not belong to user");
+                throw HttpError.Forbidden($"Post {id} does not belong to user");
+            }
+
+            post.Title = dto.Title;
+            post.Content = dto.Content;
+            post.LastUpdateTime = DateTime.Now;
+            post.Tags = TagHelpers.GetTagsFromText(dto.Content);
+
+            bool success = await _postRepository.Update(post);
+
+            if (!success)
+            {
+                _logger.LogWarning("Error during update post");
+                throw HttpError.InternalServerError("");
+            }
+
+            await _tagRepository.Create(post.Tags.Select(x => new Tag
+            {
+                Name = x,
+                PostsNumber = 1
+            }).ToArray());
+            _logger.LogInformation("Tags have been added");
+        }
+
+        public async Task Delete(string id)
+        {
+            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
+            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+
+            Post post = await _postRepository.GetById(id);
+            if (post == null)
+            {
+                _logger.LogWarning($"Post {id} does not exist");
+                throw HttpError.NotFound($"Post {id} does not exist");
+            }
+
+            if (post.AuthorId != user.Id)
+            {
+                _logger.LogWarning($"Post {id} does not belong to user");
+                throw HttpError.Forbidden($"Post {id} does not belong to user");
+            }
+
+            await _postRepository.Delete(id);
+        }
+
+        private void Validate(string operationName, string content, string title)
+        {
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
+                throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
+            }
+
+            if (content.Length > Consts.PostContentLength)
+                throw HttpError.BadRequest("Content is too long");
+
+            if (title.Length > Consts.PostTitleLength)
+                throw HttpError.BadRequest("Title is too long");
+        }
     }
 }

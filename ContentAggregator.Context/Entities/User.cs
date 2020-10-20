@@ -26,5 +26,6 @@ namespace ContentAggregator.Context.Entities
         public string[] BlackListedUserIds { get; set; }
 
         public string[] FollowedUserIds { get; set; }
+        public string PictureId { get; set; }
     }
 }
