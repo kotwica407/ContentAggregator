@@ -2,7 +2,6 @@
 {
     public class Comment : PostBase
     {
-        public Post Post { get; set; }
-        public Response[] Responses { get; set; }
+        public string PostId { get; set; }
     }
 }

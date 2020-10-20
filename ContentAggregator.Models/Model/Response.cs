@@ -2,6 +2,6 @@
 {
     public class Response : PostBase
     {
-        public Comment Comment { get; set; }
+        public string CommentId { get; set; }
     }
 }

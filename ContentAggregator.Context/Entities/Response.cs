@@ -18,7 +18,7 @@ namespace ContentAggregator.Context.Entities
         public DateTime LastUpdateTime { get; set; }
 
         [Required]
-        public Comment Comment { get; set; }
+        public string CommentId { get; set; }
 
         [Required]
         public int Rate { get; set; }

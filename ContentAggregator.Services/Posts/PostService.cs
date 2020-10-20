@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -7,9 +6,9 @@ using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories.Posts;
+using ContentAggregator.Repositories;
 using ContentAggregator.Repositories.Tags;
-using ContentAggregator.Repositories.Users;
+using ContentAggregator.Services.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -19,13 +18,13 @@ namespace ContentAggregator.Services.Posts
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
-        private readonly IPostRepository _postRepository;
+        private readonly ICrudRepository<Post> _postRepository;
         private readonly ITagRepository _tagRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly ICrudRepository<User> _userRepository;
 
         public PostService(
-            IPostRepository postRepository,
-            IUserRepository userRepository,
+            ICrudRepository<Post> postRepository,
+            ICrudRepository<User> userRepository,
             ITagRepository tagRepository,
             IHttpContextAccessor httpContextAccessor,
             ILogger<PostService> logger)
@@ -41,7 +40,7 @@ namespace ContentAggregator.Services.Posts
         {
             #region Validate
 
-            if(!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
                 _logger.LogWarning("You cannot create post if you are not logged in");
                 throw HttpError.Unauthorized("You cannot create post if you are not logged in");
@@ -56,17 +55,16 @@ namespace ContentAggregator.Services.Posts
             #endregion
 
             string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = await _userRepository.GetByUserName(userName);
+            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
             var post = new Post
             {
                 Title = dto.Title,
                 Content = dto.Content,
-                Comments = new Comment[0],
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
                 AuthorId = user.Id,
                 Rate = 0,
-                Tags = GetTagsFromText(dto.Content),
+                Tags = TagHelpers.GetTagsFromText(dto.Content),
                 Id = Guid.NewGuid().ToString()
             };
 
@@ -83,29 +81,6 @@ namespace ContentAggregator.Services.Posts
             return post;
         }
 
-        private static string[] GetTagsFromText(string text)
-        {
-            List<string> result = new List<string>();
-            string[] parts = text.Split(null); //white-space is assumed to be the splitting character
-            foreach (string part in parts)
-            {
-                int firstPositionOfHash = part.IndexOf('#');
-                switch (firstPositionOfHash)
-                {
-                    case -1:
-                        continue;
-                    default:
-                        result.AddRange(part.Split('#').Skip(1));
-                        break;
-                }
-            }
-
-            return result.Distinct().ToArray();
-        }
-
-        public Task<Post> Get(string id)
-        {
-            return _postRepository.GetById(id);
-        }
+        public Task<Post> Get(string id) => _postRepository.GetById(id);
     }
 }

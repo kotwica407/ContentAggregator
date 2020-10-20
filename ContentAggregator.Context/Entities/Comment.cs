@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using ContentAggregator.Common;
 
@@ -19,9 +18,7 @@ namespace ContentAggregator.Context.Entities
         public DateTime LastUpdateTime { get; set; }
 
         [Required]
-        public Post Post { get; set; }
-
-        public List<Response> Responses { get; set; }
+        public string PostId { get; set; }
 
         [Required]
         public int Rate { get; set; }

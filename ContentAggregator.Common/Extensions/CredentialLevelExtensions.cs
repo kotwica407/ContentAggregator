@@ -8,7 +8,7 @@ namespace ContentAggregator.Common.Extensions
         //I think, admin should have Moderator role
         public static string[] GetAllPossibleRoles(this CredentialLevel credentialLevel)
         {
-            var list = new List<string>() { CredentialLevel.User.ToString("G") };
+            var list = new List<string>();
 
             if(credentialLevel.HasFlag(CredentialLevel.SuperAdmin))
                 list.Add(CredentialLevel.SuperAdmin.ToString("G"));

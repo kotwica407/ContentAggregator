@@ -7,10 +7,8 @@ namespace ContentAggregator.Repositories.Mappings.Profiles
     {
         public ResponseProfile()
         {
-            CreateMap<Response, Context.Entities.Response>()
-               .ForMember(r => r.Comment, o => o.MapFrom(r => CommentsMapper.Map(r.Comment)));
-            CreateMap<Context.Entities.Response, Response>()
-               .ForMember(r => r.Comment, o => o.MapFrom(r => CommentsMapper.Map(r.Comment)));
+            CreateMap<Response, Context.Entities.Response>();
+            CreateMap<Context.Entities.Response, Response>();
         }
     }
 }

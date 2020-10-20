@@ -47,6 +47,8 @@ namespace ContentAggregator.Web
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
+            app.ConfigureSwagger();
+
             app.ConfigureExceptionHandler(loggerFactory);
             app.UseHttpsRedirection();
 

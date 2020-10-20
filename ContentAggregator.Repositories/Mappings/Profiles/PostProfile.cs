@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using AutoMapper;
+﻿using AutoMapper;
 using ContentAggregator.Models.Model;
 
 namespace ContentAggregator.Repositories.Mappings.Profiles
@@ -8,10 +7,8 @@ namespace ContentAggregator.Repositories.Mappings.Profiles
     {
         public PostProfile()
         {
-            CreateMap<Post, Context.Entities.Post>()
-               .ForMember(p => p.Comments, o => o.MapFrom(p => p.Comments.Select(CommentsMapper.Map)));
-            CreateMap<Context.Entities.Post, Post>()
-               .ForMember(p => p.Comments, o => o.MapFrom(p => p.Comments.Select(CommentsMapper.Map)));
+            CreateMap<Post, Context.Entities.Post>();
+            CreateMap<Context.Entities.Post, Post>();
         }
     }
 }
