@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ContentAggregator.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class PostController : ControllerBase
     {
         private readonly IPostService _postService;
@@ -46,7 +46,7 @@ namespace ContentAggregator.Web.Controllers
             return Ok(posts);
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("{id}")]
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]

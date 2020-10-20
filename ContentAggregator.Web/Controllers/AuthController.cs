@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ContentAggregator.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
