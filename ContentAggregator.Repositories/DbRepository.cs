@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Repositories
 {
-    public class DbRepository<Tmodel, Tentity> : ICrudRepository<Tmodel>
-        where Tmodel : BaseModel
-        where Tentity : BaseEntity
+    public class DbRepository<TModel, TEntity> : ICrudRepository<TModel>
+        where TModel : BaseModel
+        where TEntity : BaseEntity
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -24,44 +24,44 @@ namespace ContentAggregator.Repositories
             _context = context;
         }
 
-        public async Task Create(Tmodel obj)
+        public async Task Create(TModel obj)
         {
-            var entity = _mapper.Map<Tentity>(obj);
-            await _context.Set<Tentity>().AddAsync(entity);
+            var entity = _mapper.Map<TEntity>(obj);
+            await _context.Set<TEntity>().AddAsync(entity);
             await _context.SaveChangesAsync();
         }
 
-        public Task<Tmodel[]> GetAll()
+        public Task<TModel[]> GetAll()
         {
-            return _context.Set<Tentity>()
+            return _context.Set<TEntity>()
                .AsNoTracking()
-               .ProjectTo<Tmodel>(_mapper.ConfigurationProvider)
+               .ProjectTo<TModel>(_mapper.ConfigurationProvider)
                .ToArrayAsync();
         }
             
 
-        public Task<Tmodel> GetById(string id)
+        public Task<TModel> GetById(string id)
         {
-            return _context.Set<Tentity>()
+            return _context.Set<TEntity>()
                .AsNoTracking()
                .Where(x => x.Id == id)
-               .ProjectTo<Tmodel>(_mapper.ConfigurationProvider)
+               .ProjectTo<TModel>(_mapper.ConfigurationProvider)
                .FirstOrDefaultAsync();
         }
 
-        public Task<Tmodel[]> Find(Expression<Func<Tmodel, bool>> predicate)
+        public Task<TModel[]> Find(Expression<Func<TModel, bool>> predicate)
         {
-            Expression<Func<Tentity, bool>> mappedSelector = _mapper.Map<Expression<Func<Tentity, bool>>>(predicate);
-            return _context.Set<Tentity>()
+            Expression<Func<TEntity, bool>> mappedSelector = _mapper.Map<Expression<Func<TEntity, bool>>>(predicate);
+            return _context.Set<TEntity>()
                .AsNoTracking()
                .Where(mappedSelector)
-               .ProjectTo<Tmodel>(_mapper.ConfigurationProvider)
+               .ProjectTo<TModel>(_mapper.ConfigurationProvider)
                .ToArrayAsync();
         }
 
-        public async Task<bool> Update(Tmodel obj)
+        public async Task<bool> Update(TModel obj)
         {
-            var entity = _mapper.Map<Tentity>(obj);
+            var entity = _mapper.Map<TEntity>(obj);
             _context.Entry(entity).State = EntityState.Modified;
 
             try
@@ -76,10 +76,10 @@ namespace ContentAggregator.Repositories
 
         public async Task Delete(string id)
         {
-            Tentity existingEntity = await _context.Set<Tentity>().FirstOrDefaultAsync(x => x.Id == id);
+            TEntity existingEntity = await _context.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id);
             if (existingEntity != null)
             {
-                _context.Set<Tentity>().Remove(existingEntity);
+                _context.Set<TEntity>().Remove(existingEntity);
                 await _context.SaveChangesAsync();
             }
         }
