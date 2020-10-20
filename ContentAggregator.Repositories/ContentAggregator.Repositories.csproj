@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ContentAggregator.Context\ContentAggregator.Context.csproj" />
     <ProjectReference Include="..\ContentAggregator.Models\ContentAggregator.Models.csproj" />
   </ItemGroup>

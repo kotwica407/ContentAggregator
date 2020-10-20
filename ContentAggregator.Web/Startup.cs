@@ -1,9 +1,11 @@
 using ContentAggregator.Context;
 using ContentAggregator.Web.Extensions;
+using ContentAggregator.Web.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,32 +25,40 @@ namespace ContentAggregator.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<UserContext>(options => 
-                options.UseNpgsql(Configuration.GetSection("Database").GetValue<string>("ConnectionString")));
             services.ConfigureServices();
+            services.ConfigureDbContext(Configuration);
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-            services.AddControllers();
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Strict;
+                options.HttpOnly = HttpOnlyPolicy.Always;
+                options.Secure = CookieSecurePolicy.Always;
+            });
+            services.AddControllers()
+               .AddJsonOptions(options => {
+                   options.JsonSerializerOptions.WriteIndented = true;
+                   options.JsonSerializerOptions.IgnoreNullValues = true;
+               });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
-            {
                 app.UseDeveloperExceptionPage();
-            }
 
-            app.UseHttpsRedirection();
+            app.ConfigureSwagger();
+
+            app.ConfigureExceptionHandler(loggerFactory);
+            //app.UseHttpsRedirection(); //swagger on http port doesn work correctly if requests are redirected to https
 
             app.UseRouting();
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseMiddleware<RequestLoggingMiddleware>();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

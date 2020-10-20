@@ -1,7 +1,5 @@
-﻿using ContentAggregator.Context.Entities;
-using System;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using ContentAggregator.Models.Model;
 
 namespace ContentAggregator.Repositories.Users
 {
@@ -11,7 +9,6 @@ namespace ContentAggregator.Repositories.Users
         Task<bool> Update(User user);
         Task<User> GetByUserName(string userName);
         Task<User> GetByEmail(string emailAddress);
-        Task<User> Get(Expression<Func<User, bool>> predicate);
         Task Delete(string userId);
     }
 }

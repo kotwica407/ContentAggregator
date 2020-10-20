@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ContentAggregator.Models
 {
+    [Flags]
     public enum CredentialLevel : byte
     {
-        User,
-        Moderator,
-        Admin,
-        SuperAdmin
+        User = 1,
+        Moderator = 2,
+        Admin = 4,
+        SuperAdmin = 8
     }
 }

@@ -1,24 +1,31 @@
-﻿using ContentAggregator.Common;
+﻿using System.ComponentModel.DataAnnotations;
+using ContentAggregator.Common;
 using ContentAggregator.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace ContentAggregator.Context.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        [Key]
-        public string Id { get; set; }
         [Required]
         [MaxLength(Consts.UsernameMaxLength)]
         public string Name { get; set; }
+
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+
         public CredentialLevel CredentialLevel { get; set; }
+
         [MaxLength(Consts.DescriptionMaxLength)]
         public string Description { get; set; }
+
+        public string[] BlackListedTags { get; set; }
+
+        public string[] FollowedTags { get; set; }
+
+        public string[] BlackListedUserIds { get; set; }
+
+        public string[] FollowedUserIds { get; set; }
+        public string PictureId { get; set; }
     }
 }

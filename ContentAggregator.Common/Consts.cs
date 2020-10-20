@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ContentAggregator.Common
+﻿namespace ContentAggregator.Common
 {
     public static class Consts
     {
@@ -8,5 +6,8 @@ namespace ContentAggregator.Common
         // if values are changed, need to recompile while solution
         public const int UsernameMaxLength = 25;
         public const int DescriptionMaxLength = 300;
+        public const int PostTitleLength = 50;
+        public const int PostContentLength = 2000;
+        public const int CommentContentLength = 1000;
     }
 }

@@ -1,40 +1,36 @@
-﻿using ContentAggregator.Models.Dtos;
-using ContentAggregator.Services.Auth;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System.Net;
 using System.Threading.Tasks;
+using ContentAggregator.Models.Dtos;
+using ContentAggregator.Services.Auth;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ContentAggregator.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            if (HttpContext.User.Identity.IsAuthenticated)
-                return BadRequest("User is still authenticated");
-            var principal = await _authService.LoginUserAsync(dto);
-            var authProperties = new AuthenticationProperties
-            {
-                AllowRefresh = true,
-                ExpiresUtc = DateTimeOffset.Now.AddDays(1),
-                IsPersistent = dto.RememberMe
-            };
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+            await _authService.LoginUserAsync(dto);
             return Ok("Logged in");
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto dto)
         {
             await _authService.RegisterUserAsync(dto);
@@ -42,11 +38,11 @@ namespace ContentAggregator.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         public async Task<IActionResult> Logout()
         {
-            if (!HttpContext.User.Identity.IsAuthenticated)
-                return Unauthorized("");
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _authService.Logout();
             return Ok("");
         }
     }

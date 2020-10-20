@@ -1,47 +1,52 @@
-﻿using ContentAggregator.Context;
-using ContentAggregator.Context.Entities;
+﻿using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using ContentAggregator.Context;
+using ContentAggregator.Models.Model;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace ContentAggregator.Repositories.Hashes
 {
     public class HashRepository : IHashRepository
     {
-        private readonly UserContext _userContext;
+        private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IMapper _mapper;
 
-        public HashRepository(UserContext userContext)
+        public HashRepository(
+            ApplicationDbContext applicationDbContext,
+            IMapper mapper)
         {
-            _userContext = userContext;
+            _applicationDbContext = applicationDbContext;
+            _mapper = mapper;
         }
-        public async Task CreateOrUpdate(HashEntity hashEntity)
-        {
-            var existingEntity = await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == hashEntity.UserId);
 
-            if (existingEntity != null)
-            {
-                existingEntity.PasswordHash = hashEntity.PasswordHash;
-            }
+        public async Task CreateOrUpdate(Hash hash)
+        {
+            Context.Entities.Hash entity =
+                await _applicationDbContext.Hashes.FirstOrDefaultAsync(x => x.Id == hash.Id);
+
+            if (entity != null)
+                entity.PasswordHash = hash.PasswordHash;
             else
-            {
-                await _userContext.HashEntities.AddAsync(hashEntity);
-            }
-            
-           await _userContext.SaveChangesAsync();
+                await _applicationDbContext.Hashes.AddAsync(_mapper.Map<Context.Entities.Hash>(hash));
+
+            await _applicationDbContext.SaveChangesAsync();
         }
 
         public async Task Delete(string userId)
         {
-            var entity = await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == userId);
-            if(entity != null)
+            Context.Entities.Hash entity = await _applicationDbContext.Hashes.FirstOrDefaultAsync(x => x.Id == userId);
+            if (entity != null)
             {
-                _userContext.HashEntities.Remove(entity);
-                await _userContext.SaveChangesAsync();
+                _applicationDbContext.Hashes.Remove(entity);
+                await _applicationDbContext.SaveChangesAsync();
             }
         }
 
-        public async Task<HashEntity> Get(string userId)
+        public Task<Hash> Get(string userId)
         {
-            return await _userContext.HashEntities.FirstOrDefaultAsync(x => x.UserId == userId);
+            return _applicationDbContext.Hashes.AsNoTracking()
+               .ProjectTo<Hash>(_mapper.ConfigurationProvider).FirstOrDefaultAsync(x => x.Id == userId);
         }
     }
 }
