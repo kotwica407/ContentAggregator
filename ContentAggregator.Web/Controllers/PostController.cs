@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Services.Posts;
@@ -18,6 +19,8 @@ namespace ContentAggregator.Web.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType((int) HttpStatusCode.Created)]
+        [ProducesResponseType((int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreatePostDto dto)
         {
             Post post = await _postService.Create(dto);
@@ -26,6 +29,8 @@ namespace ContentAggregator.Web.Controllers
 
         [HttpGet]
         [Route("{id}")]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Get([FromRoute] string id)
         {
             Post post = await _postService.Get(id);

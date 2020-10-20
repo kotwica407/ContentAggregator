@@ -50,7 +50,7 @@ namespace ContentAggregator.Web
             app.ConfigureSwagger();
 
             app.ConfigureExceptionHandler(loggerFactory);
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection(); //swagger on http port doesn work correctly if requests are redirected to https
 
             app.UseRouting();
             app.UseCookiePolicy();

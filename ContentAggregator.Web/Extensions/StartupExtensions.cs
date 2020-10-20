@@ -39,6 +39,17 @@ namespace ContentAggregator.Web.Extensions
 
             services.AddHttpContextAccessor();
             services.ConfigureSwagger();
+
+            services.ConfigureCors();
+        }
+
+        private static void ConfigureCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("myAllowSpecificOrigins",
+                    builder => { builder.WithOrigins("*"); });
+            });
         }
 
         private static void ConfigureMapper(this IServiceCollection services)
