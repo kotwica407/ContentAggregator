@@ -4,7 +4,6 @@ using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
 using ContentAggregator.Services.Session;
 using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Posts;
@@ -22,8 +21,6 @@ namespace ContentAggregator.Services.Comments
         public CommentService(
             ICommentRepository commentRepository,
             IPostRepository postRepository,
-            IUserRepository userRepository,
-            IHttpContextAccessor httpContextAccessor,
             ILogger<CommentService> logger,
             ISessionService sessionService)
         {

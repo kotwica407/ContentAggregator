@@ -7,19 +7,17 @@ using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Tags;
-using ContentAggregator.Repositories.Users;
 using ContentAggregator.Services.Helpers;
 using ContentAggregator.Services.Session;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Posts
 {
     public class PostService : IPostService
     {
-        private readonly ISessionService _sessionService;
         private readonly ILogger _logger;
         private readonly IPostRepository _postRepository;
+        private readonly ISessionService _sessionService;
         private readonly ITagRepository _tagRepository;
 
         public PostService(

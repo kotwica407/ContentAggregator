@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
+using ContentAggregator.Repositories.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -10,14 +10,14 @@ namespace ContentAggregator.Services.Session
 {
     public class SessionService : ISessionService
     {
-        private readonly ICrudRepository<User> _userRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
 
         public SessionService(
             ILogger<SessionService> logger,
             IHttpContextAccessor httpContextAccessor,
-            ICrudRepository<User> userRepository)
+            IUserRepository userRepository)
         {
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
