@@ -5,8 +5,9 @@ using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
+using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Tags;
+using ContentAggregator.Repositories.Users;
 using ContentAggregator.Services.Helpers;
 using ContentAggregator.Services.Session;
 using Microsoft.AspNetCore.Http;
@@ -18,12 +19,12 @@ namespace ContentAggregator.Services.Posts
     {
         private readonly ISessionService _sessionService;
         private readonly ILogger _logger;
-        private readonly ICrudRepository<Post> _postRepository;
+        private readonly IPostRepository _postRepository;
         private readonly ITagRepository _tagRepository;
 
         public PostService(
             ISessionService sessionService,
-            ICrudRepository<Post> postRepository,
+            IPostRepository postRepository,
             ITagRepository tagRepository,
             ILogger<PostService> logger)
         {
@@ -74,6 +75,7 @@ namespace ContentAggregator.Services.Posts
         }
 
         public Task<Post[]> Get() => _postRepository.GetAll();
+        public Task<Post[]> Get(int skip, int take) => _postRepository.GetPage(skip, take);
 
         public async Task Update(string id, UpdatePostDto dto)
         {

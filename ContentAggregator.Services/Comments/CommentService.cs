@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Comments;
@@ -6,20 +6,24 @@ using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories;
 using ContentAggregator.Services.Session;
+using ContentAggregator.Repositories.Comments;
+using ContentAggregator.Repositories.Posts;
 using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Comments
 {
     public class CommentService : ICommentService
     {
-        private readonly ICrudRepository<Comment> _commentRepository;
+        private readonly ICommentRepository _commentRepository;
         private readonly ILogger _logger;
-        private readonly ICrudRepository<Post> _postRepository;
+        private readonly IPostRepository _postRepository;
         private readonly ISessionService _sessionService;
 
         public CommentService(
-            ICrudRepository<Comment> commentRepository,
-            ICrudRepository<Post> postRepository,
+            ICommentRepository commentRepository,
+            IPostRepository postRepository,
+            IUserRepository userRepository,
+            IHttpContextAccessor httpContextAccessor,
             ILogger<CommentService> logger,
             ISessionService sessionService)
         {

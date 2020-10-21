@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Repositories
 {
-    public class DbRepository<TModel, TEntity> : ICrudRepository<TModel>
+    public abstract class DbRepository<TModel, TEntity> : ICrudRepository<TModel>
         where TModel : BaseModel
         where TEntity : BaseEntity
     {
