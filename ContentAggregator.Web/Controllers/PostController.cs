@@ -38,11 +38,12 @@ namespace ContentAggregator.Web.Controllers
         }
 
         [HttpGet]
+        [Route("")]
         [ProducesResponseType(typeof(Post[]), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] int skip, int take)
         {
-            Post[] posts = await _postService.Get();
+            Post[] posts = await _postService.Get(skip, take);
             return Ok(posts);
         }
 

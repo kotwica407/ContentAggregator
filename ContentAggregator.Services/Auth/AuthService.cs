@@ -12,6 +12,7 @@ using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories;
 using ContentAggregator.Repositories.Hashes;
+using ContentAggregator.Repositories.Users;
 using ContentAggregator.Services.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,11 +26,11 @@ namespace ContentAggregator.Services.Auth
         private readonly IHashRepository _hashRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
-        private readonly ICrudRepository<User> _userRepository;
+        private readonly IUserRepository _userRepository;
 
         public AuthService(
             IHashRepository hashRepository,
-            ICrudRepository<User> userRepository,
+            IUserRepository userRepository,
             IHttpContextAccessor httpContextAccessor,
             ILogger<AuthService> logger)
         {

@@ -9,6 +9,7 @@ namespace ContentAggregator.Services.Posts
         Task<Post> Create(CreatePostDto dto);
         Task<Post> Get(string id);
         Task<Post[]> Get();
+        Task<Post[]> Get(int skip, int take);
         Task Update(string id, UpdatePostDto dto);
         Task Delete(string id);
     }

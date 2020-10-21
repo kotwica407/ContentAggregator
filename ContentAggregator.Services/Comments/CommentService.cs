@@ -8,6 +8,9 @@ using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories;
+using ContentAggregator.Repositories.Comments;
+using ContentAggregator.Repositories.Posts;
+using ContentAggregator.Repositories.Users;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -15,16 +18,16 @@ namespace ContentAggregator.Services.Comments
 {
     public class CommentService : ICommentService
     {
-        private readonly ICrudRepository<Comment> _commentRepository;
+        private readonly ICommentRepository _commentRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
-        private readonly ICrudRepository<Post> _postRepository;
-        private readonly ICrudRepository<User> _userRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IUserRepository _userRepository;
 
         public CommentService(
-            ICrudRepository<Comment> commentRepository,
-            ICrudRepository<Post> postRepository,
-            ICrudRepository<User> userRepository,
+            ICommentRepository commentRepository,
+            IPostRepository postRepository,
+            IUserRepository userRepository,
             IHttpContextAccessor httpContextAccessor,
             ILogger<CommentService> logger)
         {
