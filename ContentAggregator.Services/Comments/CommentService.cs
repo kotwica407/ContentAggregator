@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Transactions;
 using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories;
-using Microsoft.AspNetCore.Http;
+using ContentAggregator.Services.Session;
 using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Comments
@@ -16,31 +13,27 @@ namespace ContentAggregator.Services.Comments
     public class CommentService : ICommentService
     {
         private readonly ICrudRepository<Comment> _commentRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
         private readonly ICrudRepository<Post> _postRepository;
-        private readonly ICrudRepository<User> _userRepository;
+        private readonly ISessionService _sessionService;
 
         public CommentService(
             ICrudRepository<Comment> commentRepository,
             ICrudRepository<Post> postRepository,
-            ICrudRepository<User> userRepository,
-            IHttpContextAccessor httpContextAccessor,
-            ILogger<CommentService> logger)
+            ILogger<CommentService> logger,
+            ISessionService sessionService)
         {
             _commentRepository = commentRepository;
             _postRepository = postRepository;
-            _userRepository = userRepository;
-            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
+            _sessionService = sessionService;
         }
 
         public async Task<Comment> Create(string postId, CreateCommentDto dto)
         {
-            Validate("create", dto.Content);
+            User user = await _sessionService.GetUser();
+            Validate("create", dto.Content, user);
 
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
             Post post = await _postRepository.GetById(postId);
             if (post == null)
             {
@@ -82,10 +75,8 @@ namespace ContentAggregator.Services.Comments
 
         public async Task Update(string postId, string id, UpdateCommentDto dto)
         {
-            Validate("modify", dto.Content);
-
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
+            Validate("modify", dto.Content, user);
 
             Comment comment = await _commentRepository.GetById(id);
             if (comment == null)
@@ -117,8 +108,12 @@ namespace ContentAggregator.Services.Comments
 
         public async Task Delete(string postId, string id)
         {
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
+            if (user == null)
+            {
+                _logger.LogWarning("You cannot delete comment if you are not logged in");
+                throw HttpError.Unauthorized("You cannot delete comment if you are not logged in");
+            }
 
             Comment comment = await _commentRepository.GetById(id);
             if (comment == null)
@@ -139,12 +134,12 @@ namespace ContentAggregator.Services.Comments
             await _commentRepository.Delete(id);
         }
 
-        private void Validate(string operationName, string content)
+        private void Validate(string operationName, string content, User user)
         {
-            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            if (user == null)
             {
-                _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
-                throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
+                _logger.LogWarning($"You cannot {operationName} comment if you are not logged in");
+                throw HttpError.Unauthorized($"You cannot {operationName} comment if you are not logged in");
             }
 
             if (content.Length > Consts.PostContentLength)

@@ -11,6 +11,7 @@ using ContentAggregator.Repositories.Tags;
 using ContentAggregator.Services.Auth;
 using ContentAggregator.Services.Comments;
 using ContentAggregator.Services.Posts;
+using ContentAggregator.Services.Session;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -39,6 +40,7 @@ namespace ContentAggregator.Web.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ISessionService, SessionService>();
 
             services.AddHttpContextAccessor();
             services.ConfigureSwagger();

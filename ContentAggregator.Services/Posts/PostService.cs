@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Posts;
@@ -9,6 +8,7 @@ using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories;
 using ContentAggregator.Repositories.Tags;
 using ContentAggregator.Services.Helpers;
+using ContentAggregator.Services.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -16,32 +16,28 @@ namespace ContentAggregator.Services.Posts
 {
     public class PostService : IPostService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ISessionService _sessionService;
         private readonly ILogger _logger;
         private readonly ICrudRepository<Post> _postRepository;
         private readonly ITagRepository _tagRepository;
-        private readonly ICrudRepository<User> _userRepository;
 
         public PostService(
+            ISessionService sessionService,
             ICrudRepository<Post> postRepository,
-            ICrudRepository<User> userRepository,
             ITagRepository tagRepository,
-            IHttpContextAccessor httpContextAccessor,
             ILogger<PostService> logger)
         {
+            _sessionService = sessionService;
             _postRepository = postRepository;
-            _userRepository = userRepository;
             _tagRepository = tagRepository;
-            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
         public async Task<Post> Create(CreatePostDto dto)
         {
-            Validate("create", dto.Content, dto.Title);
+            User user = await _sessionService.GetUser();
+            Validate("create", dto.Content, dto.Title, user);
 
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
             var post = new Post
             {
                 Title = dto.Title,
@@ -81,10 +77,8 @@ namespace ContentAggregator.Services.Posts
 
         public async Task Update(string id, UpdatePostDto dto)
         {
-            Validate("modify", dto.Content, dto.Title);
-
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
+            Validate("modify", dto.Content, dto.Title, user);
 
             Post post = await _postRepository.GetById(id);
             if (post == null)
@@ -122,8 +116,7 @@ namespace ContentAggregator.Services.Posts
 
         public async Task Delete(string id)
         {
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
 
             Post post = await _postRepository.GetById(id);
             if (post == null)
@@ -141,9 +134,9 @@ namespace ContentAggregator.Services.Posts
             await _postRepository.Delete(id);
         }
 
-        private void Validate(string operationName, string content, string title)
+        private void Validate(string operationName, string content, string title, User user)
         {
-            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            if (user == null)
             {
                 _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
                 throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
