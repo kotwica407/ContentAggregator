@@ -34,6 +34,8 @@ namespace ContentAggregator.Repositories.Likes
             if (existingEntity == null)
                 throw HttpError.NotFound($"There is no {typeof(TEntity).Name} with id {like.EntityId} in db.");
 
+            bool valueChanged = existingLikeEntity?.IsLike != like.IsLike;
+
             if (existingLikeEntity == null)
             {
                 var newEntity = _mapper.Map<TLikeEntity>(like);
@@ -53,7 +55,7 @@ namespace ContentAggregator.Repositories.Likes
             }
             else
             {
-                if (existingLikeEntity.IsLike != like.IsLike)
+                if (valueChanged)
                 {
                     if (like.IsLike)
                     {

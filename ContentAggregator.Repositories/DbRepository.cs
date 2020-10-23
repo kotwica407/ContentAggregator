@@ -74,7 +74,7 @@ namespace ContentAggregator.Repositories
             }
         }
 
-        public async Task Delete(string id)
+        public virtual async Task Delete(string id)
         {
             TEntity existingEntity = await _context.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id);
             if (existingEntity != null)

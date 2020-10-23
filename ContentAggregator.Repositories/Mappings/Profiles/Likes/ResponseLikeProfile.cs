@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ContentAggregator.Models.Model;
+using ContentAggregator.Models.Model.Likes;
 
 namespace ContentAggregator.Repositories.Mappings.Profiles.Likes
 {
@@ -7,8 +7,8 @@ namespace ContentAggregator.Repositories.Mappings.Profiles.Likes
     {
         public ResponseLikeProfile()
         {
-            CreateMap<Response, Context.Entities.Response>();
-            CreateMap<Context.Entities.Response, Response>();
+            CreateMap<ResponseLike, Context.Entities.Likes.ResponseLike>();
+            CreateMap<Context.Entities.Likes.ResponseLike, ResponseLike>();
         }
     }
 }

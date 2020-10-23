@@ -89,8 +89,8 @@ namespace ContentAggregator.Services.Comments
             Comment comment = await _commentRepository.GetById(id);
             if (comment == null)
             {
-                _logger.LogWarning($"Post {id} does not exist");
-                throw HttpError.NotFound($"Post {id} does not exist");
+                _logger.LogWarning($"Comment {id} does not exist");
+                throw HttpError.NotFound($"Comment {id} does not exist");
             }
 
             if (comment.PostId != postId)
@@ -98,8 +98,8 @@ namespace ContentAggregator.Services.Comments
 
             if (comment.AuthorId != user.Id)
             {
-                _logger.LogWarning($"Post {id} does not belong to user");
-                throw HttpError.Forbidden($"Post {id} does not belong to user");
+                _logger.LogWarning($"Comment {id} does not belong to user");
+                throw HttpError.Forbidden($"Comment {id} does not belong to user");
             }
 
             comment.Content = dto.Content;
@@ -135,8 +135,8 @@ namespace ContentAggregator.Services.Comments
 
             if (comment.AuthorId != user.Id)
             {
-                _logger.LogWarning($"Post {id} does not belong to user");
-                throw HttpError.Forbidden($"Post {id} does not belong to user");
+                _logger.LogWarning($"Comment {id} does not belong to user");
+                throw HttpError.Forbidden($"Comment {id} does not belong to user");
             }
 
             await _commentRepository.Delete(id);
