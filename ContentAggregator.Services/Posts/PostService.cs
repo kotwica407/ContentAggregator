@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
@@ -140,19 +141,45 @@ namespace ContentAggregator.Services.Posts
             await _postRepository.Delete(id);
         }
 
+        public async Task Rate(string id, RateDto dto)
+        {
+            User user = await _sessionService.GetUser();
+            Validate("rate", user);
+
+            await _likeRepository.GiveLike(new PostLike
+            {
+                EntityId = id,
+                UserId = user.Id,
+                IsLike = dto.IsLike
+            });
+        }
+
+        public async Task CancelRate(string id)
+        {
+            User user = await _sessionService.GetUser();
+            Validate("cancel rate", user);
+
+            await _likeRepository.CancelLikeOrDislike(id, user.Id);
+        }
+
         private void Validate(string operationName, string content, string title, User user)
         {
-            if (user == null)
-            {
-                _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
-                throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
-            }
+            Validate(operationName, user);
 
             if (content.Length > Consts.PostContentLength)
                 throw HttpError.BadRequest("Content is too long");
 
             if (title.Length > Consts.PostTitleLength)
                 throw HttpError.BadRequest("Title is too long");
+        }
+
+        private void Validate(string operationName, User user)
+        {
+            if (user != null)
+                return;
+
+            _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
+            throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
         }
     }
 }

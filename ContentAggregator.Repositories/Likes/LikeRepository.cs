@@ -26,7 +26,7 @@ namespace ContentAggregator.Repositories.Likes
 
         public async Task GiveLike(TLikeModel like)
         {
-            TLikeModel existingLikeEntity = await _context.Set<TLikeModel>()
+            TLikeEntity existingLikeEntity = await _context.Set<TLikeEntity>()
                .FirstOrDefaultAsync(x => x.UserId == like.UserId && x.EntityId == like.EntityId);
             TEntity existingEntity = await _context.Set<TEntity>()
                .FirstOrDefaultAsync(x => x.Id == like.EntityId);
@@ -44,10 +44,29 @@ namespace ContentAggregator.Repositories.Likes
                 existingLikeEntity.IsLike = like.IsLike;
             }
 
-            if (like.IsLike)
-                existingEntity.Likes++;
+            if (existingLikeEntity == null)
+            {
+                if (like.IsLike)
+                    existingEntity.Likes++;
+                else
+                    existingEntity.Dislikes++;
+            }
             else
-                existingEntity.Dislikes++;
+            {
+                if (existingLikeEntity.IsLike != like.IsLike)
+                {
+                    if (like.IsLike)
+                    {
+                        existingEntity.Dislikes--;
+                        existingEntity.Likes++;
+                    }
+                    else
+                    {
+                        existingEntity.Dislikes++;
+                        existingEntity.Likes--;
+                    }
+                }
+            }
 
             await _context.SaveChangesAsync();
         }
