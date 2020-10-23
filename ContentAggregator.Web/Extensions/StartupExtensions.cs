@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
+using ContentAggregator.Models.Model.Likes;
 using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Hashes;
+using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Pictures;
 using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Responses;
@@ -37,6 +37,15 @@ namespace ContentAggregator.Web.Extensions
             services.AddScoped<ICommentRepository, CommentRepository>();
             services.AddScoped<IResponseRepository, ResponseRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
+            services
+               .AddScoped<ILikeRepository<PostLike>,
+                    LikeRepository<PostLike, Context.Entities.Likes.PostLike, Context.Entities.Post>>();
+            services
+               .AddScoped<ILikeRepository<CommentLike>, LikeRepository<CommentLike, Context.Entities.Likes.CommentLike,
+                    Context.Entities.Comment>>();
+            services
+               .AddScoped<ILikeRepository<ResponseLike>, LikeRepository<ResponseLike,
+                    Context.Entities.Likes.ResponseLike, Context.Entities.Response>>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPostService, PostService>();

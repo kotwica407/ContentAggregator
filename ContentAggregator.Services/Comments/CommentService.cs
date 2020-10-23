@@ -1,11 +1,14 @@
 using System;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
+using ContentAggregator.Models.Model.Likes;
 using ContentAggregator.Services.Session;
 using ContentAggregator.Repositories.Comments;
+using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Posts;
 using Microsoft.Extensions.Logging;
 
@@ -17,17 +20,20 @@ namespace ContentAggregator.Services.Comments
         private readonly ILogger _logger;
         private readonly IPostRepository _postRepository;
         private readonly ISessionService _sessionService;
+        private readonly ILikeRepository<CommentLike> _likeRepository;
 
         public CommentService(
             ICommentRepository commentRepository,
             IPostRepository postRepository,
             ILogger<CommentService> logger,
-            ISessionService sessionService)
+            ISessionService sessionService,
+            ILikeRepository<CommentLike> likeRepository)
         {
             _commentRepository = commentRepository;
             _postRepository = postRepository;
             _logger = logger;
             _sessionService = sessionService;
+            _likeRepository = likeRepository;
         }
 
         public async Task<Comment> Create(string postId, CreateCommentDto dto)
@@ -48,7 +54,8 @@ namespace ContentAggregator.Services.Comments
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
                 AuthorId = user.Id,
-                Rate = 0,
+                Likes = 0,
+                Dislikes = 0,
                 PostId = postId,
                 Id = Guid.NewGuid().ToString()
             };
@@ -135,16 +142,42 @@ namespace ContentAggregator.Services.Comments
             await _commentRepository.Delete(id);
         }
 
+        public async Task Rate(string id, RateDto dto)
+        {
+            User user = await _sessionService.GetUser();
+            Validate("rate", user);
+
+            await _likeRepository.GiveLike(new CommentLike
+            {
+                EntityId = id,
+                UserId = user.Id,
+                IsLike = dto.IsLike
+            });
+        }
+
+        public async Task CancelRate(string id)
+        {
+            User user = await _sessionService.GetUser();
+            Validate("cancel rate", user);
+
+            await _likeRepository.CancelLikeOrDislike(id, user.Id);
+        }
+
         private void Validate(string operationName, string content, User user)
         {
-            if (user == null)
-            {
-                _logger.LogWarning($"You cannot {operationName} comment if you are not logged in");
-                throw HttpError.Unauthorized($"You cannot {operationName} comment if you are not logged in");
-            }
+            Validate(operationName, user);
 
             if (content.Length > Consts.PostContentLength)
                 throw HttpError.BadRequest("Content is too long");
+        }
+
+        private void Validate(string operationName, User user)
+        {
+            if (user != null)
+                return;
+
+            _logger.LogWarning($"You cannot {operationName} comment if you are not logged in");
+            throw HttpError.Unauthorized($"You cannot {operationName} comment if you are not logged in");
         }
     }
 }

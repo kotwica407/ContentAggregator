@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Services.Comments;
@@ -66,6 +67,30 @@ namespace ContentAggregator.Web.Controllers
         public async Task<IActionResult> Delete([FromRoute] string postId, string id)
         {
             await _commentService.Delete(postId, id);
+            return NoContent();
+        }
+
+
+        [HttpPost]
+        [Route("rate/{id}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Create([FromRoute] string id, [FromBody] RateDto dto)
+        {
+            await _commentService.Rate(id, dto);
+            return NoContent();
+        }
+
+        [HttpDelete]
+        [Route("rate/{id}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.Unauthorized)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
+        public async Task<IActionResult> DeleteRate([FromRoute] string id)
+        {
+            await _commentService.CancelRate(id);
             return NoContent();
         }
     }
