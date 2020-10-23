@@ -5,6 +5,8 @@ using ContentAggregator.Common;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
+using ContentAggregator.Models.Model.Likes;
+using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Tags;
 using ContentAggregator.Services.Helpers;
@@ -19,16 +21,19 @@ namespace ContentAggregator.Services.Posts
         private readonly IPostRepository _postRepository;
         private readonly ISessionService _sessionService;
         private readonly ITagRepository _tagRepository;
+        private readonly ILikeRepository<PostLike> _likeRepository;
 
         public PostService(
             ISessionService sessionService,
             IPostRepository postRepository,
             ITagRepository tagRepository,
+            ILikeRepository<PostLike> likeRepository,
             ILogger<PostService> logger)
         {
             _sessionService = sessionService;
             _postRepository = postRepository;
             _tagRepository = tagRepository;
+            _likeRepository = likeRepository;
             _logger = logger;
         }
 
@@ -44,7 +49,8 @@ namespace ContentAggregator.Services.Posts
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
                 AuthorId = user.Id,
-                Rate = 0,
+                Likes = 0,
+                Dislikes = 0,
                 Tags = TagHelpers.GetTagsFromText(dto.Content),
                 Id = Guid.NewGuid().ToString()
             };

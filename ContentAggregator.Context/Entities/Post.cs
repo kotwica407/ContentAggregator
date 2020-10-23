@@ -4,11 +4,8 @@ using ContentAggregator.Common;
 
 namespace ContentAggregator.Context.Entities
 {
-    public class Post : BaseEntity
+    public class Post : PostBaseEntity
     {
-        [Required]
-        public string AuthorId { get; set; }
-
         [Required]
         [MaxLength(Consts.PostTitleLength)]
         public string Title { get; set; }
@@ -18,12 +15,5 @@ namespace ContentAggregator.Context.Entities
         public string Content { get; set; }
 
         public string[] Tags { get; set; }
-
-        public DateTime CreationTime { get; set; }
-
-        public DateTime LastUpdateTime { get; set; }
-
-        [Required]
-        public int Rate { get; set; }
     }
 }

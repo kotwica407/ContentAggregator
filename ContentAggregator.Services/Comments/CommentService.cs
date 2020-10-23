@@ -48,7 +48,8 @@ namespace ContentAggregator.Services.Comments
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
                 AuthorId = user.Id,
-                Rate = 0,
+                Likes = 0,
+                Dislikes = 0,
                 PostId = postId,
                 Id = Guid.NewGuid().ToString()
             };

@@ -1,14 +1,21 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace ContentAggregator.Models.Model
+namespace ContentAggregator.Context.Entities
 {
-    public abstract class PostBase : BaseModel
+    public abstract class PostBaseEntity : BaseEntity
     {
+        [Required]
         public string AuthorId { get; set; }
-        public string Content { get; set; }
+
         public DateTime CreationTime { get; set; }
+
         public DateTime LastUpdateTime { get; set; }
+
+        [Required]
         public int Likes { get; set; }
+
+        [Required]
         public int Dislikes { get; set; }
     }
 }
