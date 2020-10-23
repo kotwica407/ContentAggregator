@@ -1,51 +1,50 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using ContentAggregator.Models.Dtos;
-using ContentAggregator.Models.Dtos.Posts;
+using ContentAggregator.Models.Dtos.Responses;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Services.Posts;
+using ContentAggregator.Services.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ContentAggregator.Web.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class PostController : ControllerBase
+    [Route("api/post/{postId}/comment/{commentId}/[controller]")]
+    public class ResponseController : ControllerBase
     {
-        private readonly IPostService _postService;
+        private readonly IResponseService _responseService;
 
-        public PostController(IPostService postService)
+        public ResponseController(IResponseService responseService)
         {
-            _postService = postService;
+            _responseService = responseService;
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Post), (int) HttpStatusCode.Created)]
-        [ProducesResponseType((int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Create([FromBody] CreatePostDto dto)
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Create([FromRoute] string postId, string commentId, [FromBody] CreateResponseDto dto)
         {
-            Post post = await _postService.Create(dto);
-            return CreatedAtAction(nameof(Get), new {id = post.Id}, post);
+            Response response = await _responseService.Create(postId, commentId, dto);
+            return CreatedAtAction(nameof(Get), new { postId, commentId, id = response.Id }, response);
         }
 
         [HttpGet]
         [Route("{id}")]
-        [ProducesResponseType(typeof(Post), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Response), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromRoute] string id)
+        public async Task<IActionResult> Get([FromRoute] string commentId, string id)
         {
-            Post post = await _postService.Get(id);
-            return Ok(post);
+            Response response = await _responseService.Get(commentId, id);
+            return Ok(response);
         }
 
         [HttpGet]
-        [Route("")]
-        [ProducesResponseType(typeof(Post[]), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(Comment[]), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromQuery] int skip, int take)
+        public async Task<IActionResult> Get([FromRoute] string commentId)
         {
-            Post[] posts = await _postService.Get(skip, take);
-            return Ok(posts);
+            Response[] responses = await _responseService.Get(commentId);
+            return Ok(responses);
         }
 
         [HttpPut]
@@ -54,9 +53,9 @@ namespace ContentAggregator.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdatePostDto dto)
+        public async Task<IActionResult> Update([FromRoute] string commentId, string id, [FromBody] UpdateResponseDto dto)
         {
-            await _postService.Update(id, dto);
+            await _responseService.Update(commentId, id, dto);
             return NoContent();
         }
 
@@ -65,11 +64,12 @@ namespace ContentAggregator.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.NoContent)]
         [ProducesResponseType((int)HttpStatusCode.Forbidden)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Delete([FromRoute] string id)
+        public async Task<IActionResult> Delete([FromRoute] string commentId, string id)
         {
-            await _postService.Delete(id);
+            await _responseService.Delete(commentId, id);
             return NoContent();
         }
+
 
         [HttpPost]
         [Route("rate/{id}")]
@@ -79,7 +79,7 @@ namespace ContentAggregator.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Create([FromRoute] string id, [FromBody] RateDto dto)
         {
-            await _postService.Rate(id, dto);
+            await _responseService.Rate(id, dto);
             return NoContent();
         }
 
@@ -90,7 +90,7 @@ namespace ContentAggregator.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> DeleteRate([FromRoute] string id)
         {
-            await _postService.CancelRate(id);
+            await _responseService.CancelRate(id);
             return NoContent();
         }
     }

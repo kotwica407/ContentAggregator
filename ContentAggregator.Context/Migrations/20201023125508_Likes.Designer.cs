@@ -3,15 +3,17 @@ using System;
 using ContentAggregator.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ContentAggregator.Context.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201023125508_Likes")]
+    partial class Likes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,14 +38,8 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastUpdateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Likes")
-                        .HasColumnType("integer");
 
                     b.Property<string>("PostId")
                         .IsRequired()
@@ -152,14 +148,8 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastUpdateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Likes")
-                        .HasColumnType("integer");
 
                     b.Property<string[]>("Tags")
                         .HasColumnType("text[]");
@@ -195,14 +185,8 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("LastUpdateTime")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("Likes")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

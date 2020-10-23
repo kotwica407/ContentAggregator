@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Model;
 
@@ -11,5 +12,7 @@ namespace ContentAggregator.Services.Comments
         Task<Comment[]> Get(string postId);
         Task Update(string postId, string id, UpdateCommentDto dto);
         Task Delete(string postId, string id);
+        Task Rate(string id, RateDto dto);
+        Task CancelRate(string id);
     }
 }

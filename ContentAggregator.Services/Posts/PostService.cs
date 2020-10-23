@@ -1,47 +1,48 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ContentAggregator.Common;
+using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
+using ContentAggregator.Models.Model.Likes;
+using ContentAggregator.Repositories.Likes;
+using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Tags;
 using ContentAggregator.Services.Helpers;
-using Microsoft.AspNetCore.Http;
+using ContentAggregator.Services.Session;
 using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Posts
 {
     public class PostService : IPostService
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger _logger;
-        private readonly ICrudRepository<Post> _postRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly ISessionService _sessionService;
         private readonly ITagRepository _tagRepository;
-        private readonly ICrudRepository<User> _userRepository;
+        private readonly ILikeRepository<PostLike> _likeRepository;
 
         public PostService(
-            ICrudRepository<Post> postRepository,
-            ICrudRepository<User> userRepository,
+            ISessionService sessionService,
+            IPostRepository postRepository,
             ITagRepository tagRepository,
-            IHttpContextAccessor httpContextAccessor,
+            ILikeRepository<PostLike> likeRepository,
             ILogger<PostService> logger)
         {
+            _sessionService = sessionService;
             _postRepository = postRepository;
-            _userRepository = userRepository;
             _tagRepository = tagRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _likeRepository = likeRepository;
             _logger = logger;
         }
 
         public async Task<Post> Create(CreatePostDto dto)
         {
-            Validate("create", dto.Content, dto.Title);
+            User user = await _sessionService.GetUser();
+            Validate("create", dto.Content, dto.Title, user);
 
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
             var post = new Post
             {
                 Title = dto.Title,
@@ -49,7 +50,8 @@ namespace ContentAggregator.Services.Posts
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
                 AuthorId = user.Id,
-                Rate = 0,
+                Likes = 0,
+                Dislikes = 0,
                 Tags = TagHelpers.GetTagsFromText(dto.Content),
                 Id = Guid.NewGuid().ToString()
             };
@@ -78,13 +80,12 @@ namespace ContentAggregator.Services.Posts
         }
 
         public Task<Post[]> Get() => _postRepository.GetAll();
+        public Task<Post[]> Get(int skip, int take) => _postRepository.GetPage(skip, take);
 
         public async Task Update(string id, UpdatePostDto dto)
         {
-            Validate("modify", dto.Content, dto.Title);
-
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
+            Validate("modify", dto.Content, dto.Title, user);
 
             Post post = await _postRepository.GetById(id);
             if (post == null)
@@ -122,8 +123,7 @@ namespace ContentAggregator.Services.Posts
 
         public async Task Delete(string id)
         {
-            string userName = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name).Value;
-            User user = (await _userRepository.Find(x => x.Name == userName)).SingleOrDefault();
+            User user = await _sessionService.GetUser();
 
             Post post = await _postRepository.GetById(id);
             if (post == null)
@@ -141,19 +141,45 @@ namespace ContentAggregator.Services.Posts
             await _postRepository.Delete(id);
         }
 
-        private void Validate(string operationName, string content, string title)
+        public async Task Rate(string id, RateDto dto)
         {
-            if (!_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            User user = await _sessionService.GetUser();
+            Validate("rate", user);
+
+            await _likeRepository.GiveLike(new PostLike
             {
-                _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
-                throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
-            }
+                EntityId = id,
+                UserId = user.Id,
+                IsLike = dto.IsLike
+            });
+        }
+
+        public async Task CancelRate(string id)
+        {
+            User user = await _sessionService.GetUser();
+            Validate("cancel rate", user);
+
+            await _likeRepository.CancelLikeOrDislike(id, user.Id);
+        }
+
+        private void Validate(string operationName, string content, string title, User user)
+        {
+            Validate(operationName, user);
 
             if (content.Length > Consts.PostContentLength)
                 throw HttpError.BadRequest("Content is too long");
 
             if (title.Length > Consts.PostTitleLength)
                 throw HttpError.BadRequest("Title is too long");
+        }
+
+        private void Validate(string operationName, User user)
+        {
+            if (user != null)
+                return;
+
+            _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
+            throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
         }
     }
 }

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ContentAggregator.Repositories
 {
-    public class DbRepository<TModel, TEntity> : ICrudRepository<TModel>
+    public abstract class DbRepository<TModel, TEntity> : ICrudRepository<TModel>
         where TModel : BaseModel
         where TEntity : BaseEntity
     {
@@ -74,7 +74,7 @@ namespace ContentAggregator.Repositories
             }
         }
 
-        public async Task Delete(string id)
+        public virtual async Task Delete(string id)
         {
             TEntity existingEntity = await _context.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id);
             if (existingEntity != null)

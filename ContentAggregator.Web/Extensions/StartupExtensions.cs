@@ -4,13 +4,20 @@ using System.IO;
 using System.Linq;
 using AutoMapper;
 using AutoMapper.Extensions.ExpressionMapping;
-using ContentAggregator.Models.Model;
-using ContentAggregator.Repositories;
+using ContentAggregator.Models.Model.Likes;
+using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Hashes;
+using ContentAggregator.Repositories.Likes;
+using ContentAggregator.Repositories.Pictures;
+using ContentAggregator.Repositories.Posts;
+using ContentAggregator.Repositories.Responses;
 using ContentAggregator.Repositories.Tags;
+using ContentAggregator.Repositories.Users;
 using ContentAggregator.Services.Auth;
 using ContentAggregator.Services.Comments;
 using ContentAggregator.Services.Posts;
+using ContentAggregator.Services.Responses;
+using ContentAggregator.Services.Session;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -24,21 +31,28 @@ namespace ContentAggregator.Web.Extensions
         {
             services.ConfigureMapper();
 
-            //services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IHashRepository, HashRepository>();
-            //services.AddScoped<IPostRepository, PostRepository>();
-
-            services.AddScoped<ICrudRepository<Picture>, DbRepository<Picture, Context.Entities.Picture>>();
-            services.AddScoped<ICrudRepository<Post>, DbRepository<Post, Context.Entities.Post>>();
-            services.AddScoped<ICrudRepository<Comment>, DbRepository<Comment, Context.Entities.Comment>>();
-            services.AddScoped<ICrudRepository<Response>, DbRepository<Response, Context.Entities.Response>>();
-            services.AddScoped<ICrudRepository<User>, DbRepository<User, Context.Entities.User>>();
-            //services.AddScoped<ICrudRepository<Hash>, DbRepository<Hash, Context.Entities.Hash>>();
+            services.AddScoped<IPictureRepository, PictureRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IResponseRepository, ResponseRepository>();
             services.AddScoped<ITagRepository, TagRepository>();
+            services
+               .AddScoped<ILikeRepository<PostLike>,
+                    LikeRepository<PostLike, Context.Entities.Likes.PostLike, Context.Entities.Post>>();
+            services
+               .AddScoped<ILikeRepository<CommentLike>, LikeRepository<CommentLike, Context.Entities.Likes.CommentLike,
+                    Context.Entities.Comment>>();
+            services
+               .AddScoped<ILikeRepository<ResponseLike>, LikeRepository<ResponseLike,
+                    Context.Entities.Likes.ResponseLike, Context.Entities.Response>>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<IResponseService, ResponseService>();
+            services.AddScoped<ISessionService, SessionService>();
 
             services.AddHttpContextAccessor();
             services.ConfigureSwagger();
