@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using ContentAggregator.Common;
+using ContentAggregator.Context.Entities.Likes;
 
 namespace ContentAggregator.Context.Entities
 {
@@ -11,5 +13,7 @@ namespace ContentAggregator.Context.Entities
 
         [Required]
         public string CommentId { get; set; }
+        public virtual Comment Comment { get; set; }
+        public virtual ICollection<BaseLikeEntity<Response>> ResponseLikes { get; set; }
     }
 }

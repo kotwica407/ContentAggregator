@@ -4,16 +4,15 @@ using AutoMapper;
 using ContentAggregator.Context;
 using ContentAggregator.Context.Entities;
 using ContentAggregator.Context.Entities.Likes;
-using ContentAggregator.Models.Exceptions;
-using ContentAggregator.Models.Model.Likes;
+using ContentAggregator.Models.Model;
 using Microsoft.EntityFrameworkCore;
+using User = ContentAggregator.Models.Model.User;
 
 namespace ContentAggregator.Repositories.Likes
 {
-    public class LikeRepository<TLikeModel, TLikeEntity, TEntity> : ILikeRepository<TLikeModel>
-        where TLikeModel : BaseLike
-        where TLikeEntity : BaseLikeEntity
+    public class LikeRepository<TModel, TEntity> : ILikeRepository<TModel>
         where TEntity : PostBaseEntity
+        where TModel : PostBase
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
@@ -24,87 +23,54 @@ namespace ContentAggregator.Repositories.Likes
             _mapper = mapper;
         }
 
-        public async Task GiveLike(TLikeModel like)
+
+        public async Task GiveLike(User user, TModel postBase, bool isLike)
         {
-            TLikeEntity existingLikeEntity = await _context.Set<TLikeEntity>()
-               .FirstOrDefaultAsync(x => x.UserId == like.UserId && x.EntityId == like.EntityId);
-            TEntity existingEntity = await _context.Set<TEntity>()
-               .FirstOrDefaultAsync(x => x.Id == like.EntityId);
+            var existingEntity = await _context.Set<BaseLikeEntity<TEntity>>()
+               .FirstOrDefaultAsync(x => x.UserId == user.Id && x.EntityId == postBase.Id);
 
             if (existingEntity == null)
-                throw HttpError.NotFound($"There is no {typeof(TEntity).Name} with id {like.EntityId} in db.");
-
-            bool valueChanged = existingLikeEntity?.IsLike != like.IsLike;
-
-            if (existingLikeEntity == null)
             {
-                var newEntity = _mapper.Map<TLikeEntity>(like);
-                await _context.Set<TLikeEntity>().AddAsync(newEntity);
-            }
-            else
-            {
-                existingLikeEntity.IsLike = like.IsLike;
-            }
-
-            if (existingLikeEntity == null)
-            {
-                if (like.IsLike)
-                    existingEntity.Likes++;
-                else
-                    existingEntity.Dislikes++;
-            }
-            else
-            {
-                if (valueChanged)
+                var newEntity = new BaseLikeEntity<TEntity>()
                 {
-                    if (like.IsLike)
-                    {
-                        existingEntity.Dislikes--;
-                        existingEntity.Likes++;
-                    }
-                    else
-                    {
-                        existingEntity.Dislikes++;
-                        existingEntity.Likes--;
-                    }
-                }
+                    IsLike = isLike,
+                    EntityId = postBase.Id,
+                    UserId = user.Id
+                };
+                await _context.Set<BaseLikeEntity<TEntity>>()
+                   .AddAsync(newEntity);
+            }
+            else
+            {
+                existingEntity.IsLike = isLike;
             }
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task CancelLikeOrDislike(string entityId, string userId)
+        public async Task CancelLikeOrDislike(string userId, string postBaseId)
         {
-            TLikeEntity existingLikeEntity = await _context.Set<TLikeEntity>()
-               .FirstOrDefaultAsync(x => x.EntityId == entityId && x.UserId == userId);
+            var existingEntity = await _context.Set<BaseLikeEntity<TEntity>>()
+               .FirstOrDefaultAsync(x => x.UserId == userId && x.EntityId == postBaseId);
 
-            if (existingLikeEntity != null)
+            if (existingEntity != null)
             {
-                _context.Set<TLikeEntity>().Remove(existingLikeEntity);
-
-                TEntity existingEntity = await _context.Set<TEntity>()
-                   .FirstOrDefaultAsync(x => x.Id == entityId);
-
-                if (existingLikeEntity.IsLike)
-                    existingEntity.Likes--;
-                else
-                    existingEntity.Dislikes--;
-
+                _context.Set<BaseLikeEntity<TEntity>>().Remove(existingEntity);
                 await _context.SaveChangesAsync();
             }
         }
 
-        public Task<int> GetNumberOfLikes(string entityId)
+        public Task<int> GetNumberOfLikes(string postBaseId)
         {
-            return _context.Set<TLikeEntity>()
-               .Where(x => x.EntityId == entityId && x.IsLike)
+            return _context.Set<BaseLikeEntity<TEntity>>()
+               .Where(x => x.EntityId == postBaseId && x.IsLike)
                .CountAsync();
         }
 
-        public Task<int> GetNumberOfDislikes(string entityId)
+        public Task<int> GetNumberOfDislikes(string postBaseId)
         {
-            return _context.Set<TLikeEntity>()
-               .Where(x => x.EntityId == entityId && !x.IsLike)
+            return _context.Set<BaseLikeEntity<TEntity>>()
+               .Where(x => x.EntityId == postBaseId && !x.IsLike)
                .CountAsync();
         }
     }

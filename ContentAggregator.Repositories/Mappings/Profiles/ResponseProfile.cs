@@ -7,7 +7,8 @@ namespace ContentAggregator.Repositories.Mappings.Profiles
     {
         public ResponseProfile()
         {
-            CreateMap<Response, Context.Entities.Response>();
+            CreateMap<Response, Context.Entities.Response>()
+               .ForMember(dest => dest.ResponseLikes, opt => opt.Ignore());
             CreateMap<Context.Entities.Response, Response>();
         }
     }
