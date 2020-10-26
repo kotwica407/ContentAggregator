@@ -6,7 +6,6 @@ using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Posts;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Models.Model.Likes;
 using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Tags;
@@ -18,17 +17,17 @@ namespace ContentAggregator.Services.Posts
 {
     public class PostService : IPostService
     {
+        private readonly ILikeRepository<Post> _likeRepository;
         private readonly ILogger _logger;
         private readonly IPostRepository _postRepository;
         private readonly ISessionService _sessionService;
         private readonly ITagRepository _tagRepository;
-        private readonly ILikeRepository<PostLike> _likeRepository;
 
         public PostService(
             ISessionService sessionService,
             IPostRepository postRepository,
             ITagRepository tagRepository,
-            ILikeRepository<PostLike> likeRepository,
+            ILikeRepository<Post> likeRepository,
             ILogger<PostService> logger)
         {
             _sessionService = sessionService;
@@ -76,10 +75,21 @@ namespace ContentAggregator.Services.Posts
             if (post == null)
                 throw HttpError.NotFound("");
 
+            await UpdatePostWithLikesAndDislikes(post);
+
             return post;
         }
 
-        public Task<Post[]> Get() => _postRepository.GetAll();
+        public async Task<Post[]> Get()
+        {
+            Post[] posts = await _postRepository.GetAll();
+
+            foreach (Post post in posts)
+                await UpdatePostWithLikesAndDislikes(post);
+
+            return posts;
+        }
+
         public Task<Post[]> Get(int skip, int take) => _postRepository.GetPage(skip, take);
 
         public async Task Update(string id, UpdatePostDto dto)
@@ -145,13 +155,15 @@ namespace ContentAggregator.Services.Posts
         {
             User user = await _sessionService.GetUser();
             Validate("rate", user);
+            Post post = await _postRepository.GetById(id);
 
-            await _likeRepository.GiveLike(new PostLike
+            if (post == null)
             {
-                EntityId = id,
-                UserId = user.Id,
-                IsLike = dto.IsLike
-            });
+                _logger.LogWarning($"There is no post with id {id}");
+                throw HttpError.NotFound($"There is no post with id {id}");
+            }
+
+            await _likeRepository.GiveLike(user, post, dto.IsLike);
         }
 
         public async Task CancelRate(string id)
@@ -159,7 +171,7 @@ namespace ContentAggregator.Services.Posts
             User user = await _sessionService.GetUser();
             Validate("cancel rate", user);
 
-            await _likeRepository.CancelLikeOrDislike(id, user.Id);
+            await _likeRepository.CancelLikeOrDislike(user.Id, id);
         }
 
         private void Validate(string operationName, string content, string title, User user)
@@ -180,6 +192,12 @@ namespace ContentAggregator.Services.Posts
 
             _logger.LogWarning($"You cannot {operationName} post if you are not logged in");
             throw HttpError.Unauthorized($"You cannot {operationName} post if you are not logged in");
+        }
+
+        private async Task UpdatePostWithLikesAndDislikes(Post post)
+        {
+            post.Likes = await _likeRepository.GetNumberOfLikes(post.Id);
+            post.Dislikes = await _likeRepository.GetNumberOfDislikes(post.Id);
         }
     }
 }

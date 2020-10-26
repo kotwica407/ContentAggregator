@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
-using ContentAggregator.Models.Model.Likes;
+using ContentAggregator.Models.Model;
 
 namespace ContentAggregator.Repositories.Likes
 {
-    public interface ILikeRepository<T> where T : BaseLike
+    public interface ILikeRepository<T> where T : PostBase
     {
-        Task GiveLike(T like);
-        Task CancelLikeOrDislike(string entityId, string userId);
-        Task<int> GetNumberOfLikes(string entityId);
-        Task<int> GetNumberOfDislikes(string entityId);
+        Task GiveLike(User user, T postBase, bool isLike);
+        Task CancelLikeOrDislike(string userId, string postBaseId);
+        Task<int> GetNumberOfLikes(string postBaseId);
+        Task<int> GetNumberOfDislikes(string postBaseId);
     }
 }

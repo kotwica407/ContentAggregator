@@ -7,6 +7,7 @@ namespace ContentAggregator.Context.Entities
     {
         [Required]
         public string AuthorId { get; set; }
+        public virtual User Author { get; set; }
 
         public DateTime CreationTime { get; set; }
 
