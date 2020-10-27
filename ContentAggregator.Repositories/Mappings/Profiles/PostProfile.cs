@@ -10,7 +10,8 @@ namespace ContentAggregator.Repositories.Mappings.Profiles
             CreateMap<Post, Context.Entities.Post>()
                .ForMember(dest => dest.Comments, opt => opt.Ignore())
                .ForMember(dest => dest.PostLikes, opt => opt.Ignore());
-            CreateMap<Context.Entities.Post, Post>();
+            CreateMap<Context.Entities.Post, Post>()
+               .ForMember(dest => dest.Author, opt => opt.Ignore());
         }
     }
 }
