@@ -73,7 +73,7 @@ namespace ContentAggregator.UnitTests.Mocks
             };
             _hashes = new List<Hash> {hash1,hash2};
 
-            var post = new Post
+            var post1 = new Post
             {
                 Id = "post-1",
                 AuthorId = user1.Id,
@@ -84,23 +84,39 @@ namespace ContentAggregator.UnitTests.Mocks
                 LastUpdateTime = new DateTime(2020, 10, 1, 12, 0, 0),
                 Tags = new []{"tag1","tag2","tag3"}
             };
+            var post2 = new Post
+            {
+                Id = "post-2",
+                AuthorId = user2.Id,
+                Title = "Title of post no.2",
+                Content = "Content of post no.2 #tag1 #tag2 \n" +
+                    "#tag3",
+                CreationTime = new DateTime(2020, 10, 1, 12, 0, 0),
+                LastUpdateTime = new DateTime(2020, 10, 1, 12, 0, 0),
+                Tags = new[] { "tag1", "tag2", "tag4" }
+            };
 
-            _posts = new List<Post>{post};
+            _posts = new List<Post> {post1, post2};
             _tags = new List<Tag>()
             {
                 new Tag
                 {
                     Name = "tag1",
-                    PostsNumber = 1
+                    PostsNumber = 2
                 },
                 new Tag
                 {
                     Name = "tag2",
-                    PostsNumber = 1
+                    PostsNumber = 2
                 },
                 new Tag
                 {
                     Name = "tag3",
+                    PostsNumber = 2
+                },
+                new Tag
+                {
+                    Name = "tag4",
                     PostsNumber = 1
                 }
             };
@@ -109,13 +125,13 @@ namespace ContentAggregator.UnitTests.Mocks
             {
                 Id = "comment-1",
                 AuthorId = user2.Id,
-                PostId = post.Id,
+                PostId = post1.Id,
                 Content = "Content of comment no.1 of post no.1",
                 CreationTime = new DateTime(2020, 10, 2, 10, 0, 0),
                 LastUpdateTime = new DateTime(2020, 10, 2, 10, 0, 0),
             };
 
-            _comments = new List<Comment>{comment};
+            _comments = new List<Comment> {comment};
 
             _responses = new List<Response>();
             _postLikes = new List<BaseLikeEntity<Context.Entities.Post>>();
