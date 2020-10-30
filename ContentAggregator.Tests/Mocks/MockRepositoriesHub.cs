@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ContentAggregator.Context.Entities;
 using ContentAggregator.Context.Entities.Likes;
+using ContentAggregator.Models;
 using ContentAggregator.Models.Model;
 using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Hashes;
@@ -15,6 +16,7 @@ using ContentAggregator.Repositories.Posts;
 using ContentAggregator.Repositories.Responses;
 using ContentAggregator.Repositories.Tags;
 using ContentAggregator.Repositories.Users;
+using ContentAggregator.Services.Helpers;
 using Moq;
 using Comment = ContentAggregator.Models.Model.Comment;
 using Hash = ContentAggregator.Models.Model.Hash;
@@ -38,6 +40,98 @@ namespace ContentAggregator.UnitTests.Mocks
         private readonly List<BaseLikeEntity<Context.Entities.Post>> _postLikes;
         private readonly List<BaseLikeEntity<Context.Entities.Comment>> _commentLikes;
         private readonly List<BaseLikeEntity<Context.Entities.Response>> _responseLikes;
+
+        public MockRepositoriesHub()
+        {
+            var user1 = new User
+            {
+                Id = "user-1",
+                Name = "kotwica407",
+                Email = "kotwica407@gmail.com",
+                CredentialLevel = CredentialLevel.User,
+                Description = "Cool user"
+            };
+            var user2 = new User
+            {
+                Id = "user-2",
+                Name = "boring123",
+                Email = "boring123@gmail.com",
+                CredentialLevel = CredentialLevel.User,
+                Description = "Boring user"
+            };
+            _users = new List<User> {user1,user2};
+
+            var hash1 = new Hash
+            {
+                Id = user1.Id,
+                PasswordHash = HashHelpers.CreateHash("password1")
+            };
+            var hash2 = new Hash
+            {
+                Id = user2.Id,
+                PasswordHash = HashHelpers.CreateHash("password2")
+            };
+            _hashes = new List<Hash> {hash1,hash2};
+
+            var post = new Post
+            {
+                Id = "post-1",
+                AuthorId = user1.Id,
+                Title = "Title of post no.1",
+                Content = "Content of post no.1 #tag1 #tag2 \n" +
+                    "#tag3",
+                CreationTime = new DateTime(2020,10,1,12,0,0),
+                LastUpdateTime = new DateTime(2020, 10, 1, 12, 0, 0),
+                Tags = new []{"tag1","tag2","tag3"}
+            };
+
+            _posts = new List<Post>{post};
+            _tags = new List<Tag>()
+            {
+                new Tag
+                {
+                    Name = "tag1",
+                    PostsNumber = 1
+                },
+                new Tag
+                {
+                    Name = "tag2",
+                    PostsNumber = 1
+                },
+                new Tag
+                {
+                    Name = "tag3",
+                    PostsNumber = 1
+                }
+            };
+
+            var comment = new Comment
+            {
+                Id = "comment-1",
+                AuthorId = user2.Id,
+                PostId = post.Id,
+                Content = "Content of comment no.1 of post no.1",
+                CreationTime = new DateTime(2020, 10, 2, 10, 0, 0),
+                LastUpdateTime = new DateTime(2020, 10, 2, 10, 0, 0),
+            };
+
+            _comments = new List<Comment>{comment};
+
+            _responses = new List<Response>();
+            _postLikes = new List<BaseLikeEntity<Context.Entities.Post>>();
+            _commentLikes = new List<BaseLikeEntity<Context.Entities.Comment>>();
+            _responseLikes = new List<BaseLikeEntity<Context.Entities.Response>>();
+
+            SetupUserRepositoryMock();
+            SetupHashRepositoryMock();
+            SetupPostRepositoryMock();
+            SetupCommentRepositoryMock();
+            SetupResponseRepositoryMock();
+            SetupTagRepositoryMock();
+            SetupPostLikeRepositoryMock();
+            SetupCommentLikeRepositoryMock();
+            SetupResponseLikeRepositoryMock();
+        }
 
         private void SetupUserRepositoryMock()
         {
