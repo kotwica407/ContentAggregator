@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ContentAggregator.Common;
 using ContentAggregator.Context.Entities.Likes;
 using ContentAggregator.Models;
@@ -21,12 +22,16 @@ namespace ContentAggregator.Context.Entities
         [MaxLength(Consts.DescriptionMaxLength)]
         public string Description { get; set; }
 
+        [NotMapped]
         public string[] BlackListedTags { get; set; }
 
+        [NotMapped]
         public string[] FollowedTags { get; set; }
 
+        [NotMapped]
         public string[] BlackListedUserIds { get; set; }
 
+        [NotMapped]
         public string[] FollowedUserIds { get; set; }
         public string PictureId { get; set; }
         public virtual ICollection<Post> Posts { get; set; }

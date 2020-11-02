@@ -3,15 +3,17 @@ using System;
 using ContentAggregator.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ContentAggregator.Context.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201102175330_TagsCollection")]
+    partial class TagsCollection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,6 +252,12 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string[]>("BlackListedTags")
+                        .HasColumnType("text[]");
+
+                    b.Property<string[]>("BlackListedUserIds")
+                        .HasColumnType("text[]");
+
                     b.Property<byte>("CredentialLevel")
                         .HasColumnType("smallint");
 
@@ -260,6 +268,12 @@ namespace ContentAggregator.Context.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string[]>("FollowedTags")
+                        .HasColumnType("text[]");
+
+                    b.Property<string[]>("FollowedUserIds")
+                        .HasColumnType("text[]");
 
                     b.Property<string>("Name")
                         .IsRequired()
