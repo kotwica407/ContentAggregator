@@ -2,14 +2,14 @@
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using ContentAggregator.Common;
 using ContentAggregator.Web;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace ContentAggregator.IntegrationTests.Common
@@ -19,10 +19,10 @@ namespace ContentAggregator.IntegrationTests.Common
         private static string GetProjectPath(string projectRelativePath, Assembly startupAssembly)
         {
             // Get name of the target project which we want to test
-            var projectName = startupAssembly.GetName().Name;
+            string? projectName = startupAssembly.GetName().Name;
 
             // Get currently executing test project path
-            var applicationBasePath = System.AppContext.BaseDirectory;
+            string applicationBasePath = AppContext.BaseDirectory;
 
             // Find the path to the target project
             var directoryInfo = new DirectoryInfo(applicationBasePath);
@@ -33,27 +33,26 @@ namespace ContentAggregator.IntegrationTests.Common
                 var projectDirectoryInfo = new DirectoryInfo(Path.Combine(directoryInfo.FullName, projectRelativePath));
                 if (projectDirectoryInfo.Exists)
                 {
-                    var projectFileInfo = new FileInfo(Path.Combine(projectDirectoryInfo.FullName, projectName, $"{projectName}.csproj"));
+                    var projectFileInfo = new FileInfo(Path.Combine(projectDirectoryInfo.FullName,
+                        projectName,
+                        $"{projectName}.csproj"));
                     if (projectFileInfo.Exists)
-                    {
                         return Path.Combine(projectDirectoryInfo.FullName, projectName);
-                    }
                 }
-            }
-            while (directoryInfo.Parent != null);
+            } while (directoryInfo.Parent != null);
 
             throw new Exception($"Project root could not be located using the application root {applicationBasePath}.");
         }
 
         internal static async Task<HttpClient> InitAsync()
         {
-            var hostBuilder = new HostBuilder()
+            IHostBuilder hostBuilder = new HostBuilder()
                .ConfigureWebHost(webHost =>
                 {
                     webHost.UseTestServer();
                     webHost.UseEnvironment("Testing");
-                    var startupProjectDir = Helpers.GetProjectPath("", typeof(Startup).GetTypeInfo().Assembly);
-                    var config = new ConfigurationBuilder()
+                    string startupProjectDir = GetProjectPath("", typeof(Startup).GetTypeInfo().Assembly);
+                    IConfigurationRoot config = new ConfigurationBuilder()
                        .SetBasePath(startupProjectDir)
                        .AddJsonFile("appsettings.Testing.json")
                        .Build();
@@ -62,9 +61,13 @@ namespace ContentAggregator.IntegrationTests.Common
                 });
 
             // Build and start the IHost
-            var host = await hostBuilder.StartAsync();
+            IHost host = await hostBuilder.StartAsync();
 
             return host.GetTestClient();
         }
+
+        internal static StringContent GetStringContent<T>(T dto) => new StringContent(JsonSerializer.Serialize(dto),
+            Encoding.UTF8,
+            Consts.ContentTypes.Json);
     }
 }
