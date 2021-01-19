@@ -27,7 +27,7 @@ namespace ContentAggregator.Context
                .HasOne<User>(p => p.Author)
                .WithMany(u => u.Posts)
                .HasForeignKey(p => p.AuthorId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Comment>()
                .HasOne<Post>(c => c.Post)
@@ -39,7 +39,7 @@ namespace ContentAggregator.Context
                .HasOne<User>(c => c.Author)
                .WithMany(u => u.Comments)
                .HasForeignKey(c => c.AuthorId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Response>()
                .HasOne<Comment>(r => r.Comment)
@@ -51,7 +51,7 @@ namespace ContentAggregator.Context
                .HasOne<User>(r => r.Author)
                .WithMany(u => u.Responses)
                .HasForeignKey(r => r.AuthorId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<User>()
                .HasOne<Picture>(u => u.Picture)
@@ -63,7 +63,6 @@ namespace ContentAggregator.Context
             ConfigureCommentLike(modelBuilder);
 
             ConfigureResponseLike(modelBuilder);
-
         }
 
         private static void ConfigureResponseLike(ModelBuilder modelBuilder)
@@ -75,13 +74,13 @@ namespace ContentAggregator.Context
                .HasOne<User>(rl => rl.User)
                .WithMany(u => u.ResponseLikes)
                .HasForeignKey(rl => rl.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<BaseLikeEntity<Response>>()
                .HasOne<Response>(rl => rl.Entity)
                .WithMany(r => r.ResponseLikes)
                .HasForeignKey(rl => rl.EntityId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
         }
 
         private static void ConfigureCommentLike(ModelBuilder modelBuilder)
@@ -93,13 +92,13 @@ namespace ContentAggregator.Context
                .HasOne<User>(cl => cl.User)
                .WithMany(u => u.CommentLikes)
                .HasForeignKey(cl => cl.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<BaseLikeEntity<Comment>>()
                .HasOne<Comment>(cl => cl.Entity)
                .WithMany(c => c.CommentLikes)
                .HasForeignKey(cl => cl.EntityId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
         }
 
         private static void ConfigurePostLike(ModelBuilder modelBuilder)
@@ -111,13 +110,13 @@ namespace ContentAggregator.Context
                .HasOne<User>(pl => pl.User)
                .WithMany(u => u.PostLikes)
                .HasForeignKey(pl => pl.UserId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<BaseLikeEntity<Post>>()
                .HasOne<Post>(pl => pl.Entity)
                .WithMany(p => p.PostLikes)
                .HasForeignKey(pl => pl.EntityId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
         }
     }
 }
