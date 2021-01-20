@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace ContentAggregator.Context
 {
@@ -16,10 +17,26 @@ namespace ContentAggregator.Context
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
 
-            services.EnsureMigrated();
+            string dbProvider = configuration.GetSection("Database").GetValue<string>("Provider");
+
+            switch (dbProvider)
+            {
+                case "MSSQL":
+                    //services.AddEntityFrameworkSqlServer().AddDbContext<ApplicationDbContext>(options => 
+                    //    options.UseSqlServer(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                    services.AddDbContext<ApplicationDbContext>(options =>
+                        options.UseSqlServer(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                    break;
+                case "Postgres":
+                    services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
+                        options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                    break;
+                default:
+                    throw new NotSupportedException("Provider put in configuration is not supported");
+            }
+
+            //services.EnsureMigrated();
         }
     }
 }

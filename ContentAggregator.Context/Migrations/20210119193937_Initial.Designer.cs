@@ -3,53 +3,53 @@ using System;
 using ContentAggregator.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ContentAggregator.Context.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20201026151718_FullRelation")]
-    partial class FullRelation
+    [Migration("20210119193937_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 .HasAnnotation("ProductVersion", "3.1.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("ContentAggregator.Context.Entities.Comment", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AuthorId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Likes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("PostId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -63,11 +63,11 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Hash", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -77,13 +77,13 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Likes.BaseLikeEntity<ContentAggregator.Context.Entities.Comment>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("EntityId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsLike")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.HasKey("UserId", "EntityId");
 
@@ -95,13 +95,13 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Likes.BaseLikeEntity<ContentAggregator.Context.Entities.Post>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("EntityId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsLike")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.HasKey("UserId", "EntityId");
 
@@ -113,13 +113,13 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Likes.BaseLikeEntity<ContentAggregator.Context.Entities.Response>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("EntityId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsLike")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.HasKey("UserId", "EntityId");
 
@@ -131,24 +131,25 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Picture", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte[]>("File")
-                        .HasColumnType("bytea");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("MimeType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("Pictures");
                 });
@@ -156,35 +157,35 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Post", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AuthorId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("character varying(2000)")
+                        .HasColumnType("nvarchar(2000)")
                         .HasMaxLength(2000);
 
                     b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Likes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    b.Property<string[]>("Tags")
-                        .HasColumnType("text[]");
+                    b.Property<string>("StringTags")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50);
 
                     b.HasKey("Id");
@@ -197,32 +198,32 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Response", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("AuthorId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CommentId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<DateTime>("CreationTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Dislikes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("LastUpdateTime")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Likes")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -236,10 +237,10 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.Tag", b =>
                 {
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("PostsNumber")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.HasKey("Name");
 
@@ -249,38 +250,38 @@ namespace ContentAggregator.Context.Migrations
             modelBuilder.Entity("ContentAggregator.Context.Entities.User", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string[]>("BlackListedTags")
-                        .HasColumnType("text[]");
-
-                    b.Property<string[]>("BlackListedUserIds")
-                        .HasColumnType("text[]");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte>("CredentialLevel")
-                        .HasColumnType("smallint");
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("Description")
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasMaxLength(300);
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string[]>("FollowedTags")
-                        .HasColumnType("text[]");
-
-                    b.Property<string[]>("FollowedUserIds")
-                        .HasColumnType("text[]");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("character varying(25)")
+                        .HasColumnType("nvarchar(25)")
                         .HasMaxLength(25);
 
                     b.Property<string>("PictureId")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StringBlackListedTags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StringBlackListedUserIds")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StringFollowedTags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StringFollowedUserIds")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -292,7 +293,7 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.User", "Author")
                         .WithMany("Comments")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ContentAggregator.Context.Entities.Post", "Post")
@@ -307,13 +308,13 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.Comment", "Entity")
                         .WithMany("CommentLikes")
                         .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("ContentAggregator.Context.Entities.User", "User")
                         .WithMany("CommentLikes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
                 });
 
@@ -322,13 +323,13 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.Post", "Entity")
                         .WithMany("PostLikes")
                         .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("ContentAggregator.Context.Entities.User", "User")
                         .WithMany("PostLikes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
                 });
 
@@ -337,13 +338,13 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.Response", "Entity")
                         .WithMany("ResponseLikes")
                         .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("ContentAggregator.Context.Entities.User", "User")
                         .WithMany("ResponseLikes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
                 });
 
@@ -359,7 +360,7 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.User", "Author")
                         .WithMany("Posts")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
@@ -368,7 +369,7 @@ namespace ContentAggregator.Context.Migrations
                     b.HasOne("ContentAggregator.Context.Entities.User", "Author")
                         .WithMany("Responses")
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ContentAggregator.Context.Entities.Comment", "Comment")
