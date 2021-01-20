@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace ContentAggregator.Context
 {
@@ -17,24 +18,28 @@ namespace ContentAggregator.Context
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var dbSection = configuration.GetSection("Database");
-            if (dbSection.GetValue<string>("Provider") == "Postgres")
+            string dbProvider = configuration.GetSection("Database").GetValue<string>("Provider");
+
+            switch (dbProvider)
             {
-                services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
-                    options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
-                services.EnsureMigrated();
-            }
-            else if (dbSection.GetValue<string>("Provider") == "InMemory")
-            {
-                services.AddEntityFrameworkInMemoryDatabase()
-                   .AddDbContext<ApplicationDbContext>(options =>
-                {
-                    options.UseInMemoryDatabase("TestDb");
-                });
-            }
-            else
-            {
-                throw new NotSupportedException();
+                case "MSSQL":
+                    services.AddDbContext<ApplicationDbContext>(options =>
+                        options.UseSqlServer(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                    services.EnsureMigrated();
+                    break;
+                case "Postgres":
+                    services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
+                        options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                    services.EnsureMigrated();
+                    break;
+                case "InMemory":
+                    services.AddEntityFrameworkInMemoryDatabase().AddDbContext<ApplicationDbContext>(options =>
+                    {
+                        options.UseInMemoryDatabase("TestDb");
+                    });
+                    break;
+                default:
+                    throw new NotSupportedException("Provider put in configuration is not supported");
             }
         }
     }

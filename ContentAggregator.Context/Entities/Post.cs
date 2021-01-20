@@ -8,7 +8,6 @@ namespace ContentAggregator.Context.Entities
 {
     public class Post : PostBaseEntity
     {
-        private string _tags;
         private static readonly char delimiter = ';';
 
         [Required]
@@ -20,11 +19,15 @@ namespace ContentAggregator.Context.Entities
         public string Content { get; set; }
 
         [NotMapped]
-        public string[] Tags
-        {
-            get => _tags.Split(delimiter);
-            set => _tags = string.Join($"{delimiter}", value);
+        public string[] Tags {
+            get { return StringTags.Split(delimiter); }
+            set
+            {
+                StringTags = string.Join($"{delimiter}", value);
+            }
         }
+
+        public string StringTags { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<BaseLikeEntity<Post>> PostLikes { get; set; }
