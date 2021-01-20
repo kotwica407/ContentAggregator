@@ -23,10 +23,10 @@ namespace ContentAggregator.Common
 
         public static class ContentTypes
         {
-            public const string ImagePng = "image/png";
-            public const string ImageJpeg = "image/jpeg";
-            public const string Pdf = "application/pdf";
-            public const string Json = "application/json";
+            public static readonly string ImagePng = "image/png";
+            public static readonly string ImageJpeg = "image/jpeg";
+            public static readonly string Pdf = "application/pdf";
+            public static readonly string Json = "application/json";
         }
 
     }

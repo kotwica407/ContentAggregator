@@ -24,6 +24,10 @@ namespace ContentAggregator.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Post>()
+               .Property<string>("_tags")
+               .HasColumnName("TagCollection");
+
+            modelBuilder.Entity<Post>()
                .HasOne<User>(p => p.Author)
                .WithMany(u => u.Posts)
                .HasForeignKey(p => p.AuthorId)
