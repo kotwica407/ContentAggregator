@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace ContentAggregator.Context
 {
@@ -18,18 +17,18 @@ namespace ContentAggregator.Context
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            string dbProvider = configuration.GetSection("Database").GetValue<string>("Provider");
+            string dbProvider = configuration.GetValue<string>("DbProvider");
 
             switch (dbProvider)
             {
                 case "MSSQL":
                     services.AddDbContext<ApplicationDbContext>(options =>
-                        options.UseSqlServer(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                        options.UseSqlServer(configuration.GetConnectionString("ApplicationDbContext")));
                     services.EnsureMigrated();
                     break;
                 case "Postgres":
                     services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
-                        options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+                        options.UseNpgsql(configuration.GetConnectionString("ApplicationDbContext")));
                     services.EnsureMigrated();
                     break;
                 case "InMemory":
