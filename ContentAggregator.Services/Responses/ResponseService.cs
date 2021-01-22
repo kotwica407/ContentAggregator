@@ -5,7 +5,6 @@ using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Responses;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Models.Model.Likes;
 using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Responses;
@@ -16,18 +15,18 @@ namespace ContentAggregator.Services.Responses
 {
     public class ResponseService : IResponseService
     {
-        private readonly ILogger _logger;
         private readonly ICommentRepository _commentRepository;
+        private readonly ILikeRepository<Response> _likeRepository;
+        private readonly ILogger _logger;
         private readonly IResponseRepository _responseRepository;
         private readonly ISessionService _sessionService;
-        private readonly ILikeRepository<ResponseLike> _likeRepository;
 
         public ResponseService(
             IResponseRepository responseRepository,
             ICommentRepository commentRepository,
             ILogger<ResponseService> logger,
             ISessionService sessionService,
-            ILikeRepository<ResponseLike> likeRepository)
+            ILikeRepository<Response> likeRepository)
         {
             _responseRepository = responseRepository;
             _commentRepository = commentRepository;
@@ -51,7 +50,7 @@ namespace ContentAggregator.Services.Responses
             if (comment.PostId != postId)
             {
                 _logger.LogWarning($"Comment {commentId} does not belong to post {postId}");
-                throw HttpError.BadRequest($"Comment does not belong to post");
+                throw HttpError.BadRequest("Comment does not belong to post");
             }
 
             var response = new Response
@@ -85,7 +84,14 @@ namespace ContentAggregator.Services.Responses
             return response;
         }
 
-        public Task<Response[]> Get(string commentId) => _responseRepository.Find(x => x.CommentId == commentId);
+        public async Task<Response[]> Get(string commentId)
+        {
+            Response[] responses = await _responseRepository.Find(x => x.CommentId == commentId);
+            foreach (Response response in responses)
+                await UpdateResponseWithLikesAndDislikes(response);
+
+            return responses;
+        }
 
         public async Task Update(string commentId, string id, UpdateResponseDto dto)
         {
@@ -152,13 +158,15 @@ namespace ContentAggregator.Services.Responses
         {
             User user = await _sessionService.GetUser();
             Validate("rate", user);
+            Response response = await _responseRepository.GetById(id);
 
-            await _likeRepository.GiveLike(new ResponseLike
+            if (response == null)
             {
-                EntityId = id,
-                UserId = user.Id,
-                IsLike = dto.IsLike
-            });
+                _logger.LogWarning($"There is no response with id {id}");
+                throw HttpError.NotFound($"There is no response with id {id}");
+            }
+
+            await _likeRepository.GiveLike(user, response, dto.IsLike);
         }
 
         public async Task CancelRate(string id)
@@ -184,6 +192,12 @@ namespace ContentAggregator.Services.Responses
 
             _logger.LogWarning($"You cannot {operationName} response if you are not logged in");
             throw HttpError.Unauthorized($"You cannot {operationName} response if you are not logged in");
+        }
+
+        private async Task UpdateResponseWithLikesAndDislikes(Response response)
+        {
+            response.Likes = await _likeRepository.GetNumberOfLikes(response.Id);
+            response.Dislikes = await _likeRepository.GetNumberOfDislikes(response.Id);
         }
     }
 }

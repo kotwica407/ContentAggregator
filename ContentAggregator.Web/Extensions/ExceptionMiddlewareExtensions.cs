@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using ContentAggregator.Common;
 using ContentAggregator.Models.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -18,7 +19,7 @@ namespace ContentAggregator.Web.Extensions
             {
                 appBuilder.Run(async context =>
                 {
-                    context.Response.ContentType = "application/json";
+                    context.Response.ContentType = Consts.ContentTypes.Json;
                     Exception exception = context.Features.Get<IExceptionHandlerPathFeature>()?.Error;
                     if (exception != null)
                     {
@@ -32,11 +33,13 @@ namespace ContentAggregator.Web.Extensions
         private static async Task HandleException(this HttpContext context, Exception exception)
         {
             if (exception is HttpErrorException httpErrorException)
-                await context.HandleException((int) httpErrorException.HttpStatusCode, exception.Message, "text/plain");
+                await context.HandleException((int)httpErrorException.HttpStatusCode, 
+                    exception.Message, 
+                    Consts.ContentTypes.Text);
             else
                 await context.HandleException((int) HttpStatusCode.InternalServerError,
                     "An error occurred",
-                    "text/plain");
+                    Consts.ContentTypes.Text);
         }
 
         private static async Task HandleException(

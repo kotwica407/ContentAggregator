@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,10 +17,29 @@ namespace ContentAggregator.Context
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(configuration.GetSection("Database").GetValue<string>("ConnectionString")));
+            string dbProvider = configuration.GetValue<string>("DbProvider");
 
-            services.EnsureMigrated();
+            switch (dbProvider)
+            {
+                case "MSSQL":
+                    services.AddDbContext<ApplicationDbContext>(options =>
+                        options.UseSqlServer(configuration.GetConnectionString("ApplicationDbContext")));
+                    services.EnsureMigrated();
+                    break;
+                case "Postgres":
+                    services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(options =>
+                        options.UseNpgsql(configuration.GetConnectionString("ApplicationDbContext")));
+                    services.EnsureMigrated();
+                    break;
+                case "InMemory":
+                    services.AddEntityFrameworkInMemoryDatabase().AddDbContext<ApplicationDbContext>(options =>
+                    {
+                        options.UseInMemoryDatabase("TestDb");
+                    });
+                    break;
+                default:
+                    throw new NotSupportedException("Provider put in configuration is not supported");
+            }
         }
     }
 }

@@ -7,8 +7,12 @@ namespace ContentAggregator.Repositories.Mappings.Profiles
     {
         public CommentProfile()
         {
-            CreateMap<Comment, Context.Entities.Comment>();
-            CreateMap<Context.Entities.Comment, Comment>();
+            CreateMap<Comment, Context.Entities.Comment>()
+               .ForMember(dest => dest.CommentLikes, opt => opt.Ignore())
+               .ForMember(dest => dest.Responses, opt => opt.Ignore());
+            CreateMap<Context.Entities.Comment, Comment>()
+               .ForMember(dest => dest.Author, opt => opt.Ignore())
+               .ForMember(dest => dest.Post, opt => opt.Ignore());
         }
     }
 }

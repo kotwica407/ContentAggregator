@@ -17,6 +17,8 @@ namespace ContentAggregator.Web
                 {
                     logging.ClearProviders();
                     logging.AddConsole();
+                    logging.AddDebug();
+                    logging.AddAzureWebAppDiagnostics();
                 })
                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }

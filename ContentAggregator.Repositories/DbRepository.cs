@@ -18,7 +18,7 @@ namespace ContentAggregator.Repositories
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public DbRepository(IMapper mapper, ApplicationDbContext context)
+        protected DbRepository(IMapper mapper, ApplicationDbContext context)
         {
             _mapper = mapper;
             _context = context;

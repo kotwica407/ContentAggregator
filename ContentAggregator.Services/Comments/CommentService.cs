@@ -5,11 +5,10 @@ using ContentAggregator.Models.Dtos;
 using ContentAggregator.Models.Dtos.Comments;
 using ContentAggregator.Models.Exceptions;
 using ContentAggregator.Models.Model;
-using ContentAggregator.Models.Model.Likes;
-using ContentAggregator.Services.Session;
 using ContentAggregator.Repositories.Comments;
 using ContentAggregator.Repositories.Likes;
 using ContentAggregator.Repositories.Posts;
+using ContentAggregator.Services.Session;
 using Microsoft.Extensions.Logging;
 
 namespace ContentAggregator.Services.Comments
@@ -17,17 +16,17 @@ namespace ContentAggregator.Services.Comments
     public class CommentService : ICommentService
     {
         private readonly ICommentRepository _commentRepository;
+        private readonly ILikeRepository<Comment> _likeRepository;
         private readonly ILogger _logger;
         private readonly IPostRepository _postRepository;
         private readonly ISessionService _sessionService;
-        private readonly ILikeRepository<CommentLike> _likeRepository;
 
         public CommentService(
             ICommentRepository commentRepository,
             IPostRepository postRepository,
             ILogger<CommentService> logger,
             ISessionService sessionService,
-            ILikeRepository<CommentLike> likeRepository)
+            ILikeRepository<Comment> likeRepository)
         {
             _commentRepository = commentRepository;
             _postRepository = postRepository;
@@ -76,10 +75,19 @@ namespace ContentAggregator.Services.Comments
             if (comment.PostId != postId)
                 throw HttpError.NotFound("");
 
+            await UpdateCommentWithLikesAndDislikes(comment);
+
             return comment;
         }
 
-        public Task<Comment[]> Get(string postId) => _commentRepository.Find(x => x.PostId == postId);
+        public async Task<Comment[]> Get(string postId)
+        {
+            Comment[] comments = await _commentRepository.Find(x => x.PostId == postId);
+            foreach (Comment comment in comments)
+                await UpdateCommentWithLikesAndDislikes(comment);
+
+            return comments;
+        }
 
         public async Task Update(string postId, string id, UpdateCommentDto dto)
         {
@@ -146,13 +154,15 @@ namespace ContentAggregator.Services.Comments
         {
             User user = await _sessionService.GetUser();
             Validate("rate", user);
+            Comment comment = await _commentRepository.GetById(id);
 
-            await _likeRepository.GiveLike(new CommentLike
+            if (comment == null)
             {
-                EntityId = id,
-                UserId = user.Id,
-                IsLike = dto.IsLike
-            });
+                _logger.LogWarning($"There is no comment with id {id}");
+                throw HttpError.NotFound($"There is no comment with id {id}");
+            }
+
+            await _likeRepository.GiveLike(user, comment, dto.IsLike);
         }
 
         public async Task CancelRate(string id)
@@ -178,6 +188,12 @@ namespace ContentAggregator.Services.Comments
 
             _logger.LogWarning($"You cannot {operationName} comment if you are not logged in");
             throw HttpError.Unauthorized($"You cannot {operationName} comment if you are not logged in");
+        }
+
+        private async Task UpdateCommentWithLikesAndDislikes(Comment comment)
+        {
+            comment.Likes = await _likeRepository.GetNumberOfLikes(comment.Id);
+            comment.Dislikes = await _likeRepository.GetNumberOfDislikes(comment.Id);
         }
     }
 }
