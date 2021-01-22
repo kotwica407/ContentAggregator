@@ -5,7 +5,7 @@ namespace ContentAggregator.Common
     public static class Consts
     {
         // consts fields are hardcoded in assemblies
-        // if values are changed, need to recompile while solution
+        // if values are changed, need to recompile whole solution
         public const int UsernameMaxLength = 25;
         public const int DescriptionMaxLength = 300;
         public const int PostTitleLength = 50;
@@ -27,6 +27,7 @@ namespace ContentAggregator.Common
             public static readonly string ImageJpeg = "image/jpeg";
             public static readonly string Pdf = "application/pdf";
             public static readonly string Json = "application/json";
+            public static readonly string Text = "text/plain";
         }
 
     }
